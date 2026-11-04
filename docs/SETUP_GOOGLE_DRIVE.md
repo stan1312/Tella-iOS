@@ -10,7 +10,7 @@ Durée : ~20 minutes. Rien dans ce dépôt ne contient d'identifiant Google ; to
 - Les octets vidéo vont directement du téléphone à `googleapis.com` (upload resumable) ; le script ne fait qu'ouvrir la session et vérifier le résultat (taille + SHA-256) avant d'émettre un reçu signé.
 
 ## 1. Préparer le compte
-1. Compte Google dédié recommandé (ex. un compte de test, puis un compte d'équipe validé par l'UNIL). Activez la validation en deux étapes, idéalement avec une clé de sécurité.
+1. Votre compte Google personnel convient (vous en êtes le seul administrateur, aucune restriction ne bloque l'accès « Tout le monde »). Grâce au scope `drive.file`, le script ne voit **que** le dossier `SPECTRE_DEPOT_TEST` et les fichiers qu'il crée, jamais le reste de votre Drive. Activez impérativement la validation en deux étapes, idéalement avec une clé de sécurité : la sécurité des vidéos repose sur celle de votre compte.
 2. Vérifiez l'espace disponible sur Drive (les vidéos 4K pèsent ~400 Mo/min).
 
 ## 2. Créer le projet Apps Script
@@ -46,7 +46,7 @@ clasp push
    ```
    (Exécutez `_tmp`, puis supprimez-la.)
 
-> Compte Google Workspace (ex. UNIL) : l'administrateur peut interdire l'accès « Tout le monde ». Dans ce cas, utilisez un compte de test personnel, ou le repli Cloud Run (`docs/01_ARCHITECTURE.md`, ADR-006).
+> Compte personnel (Gmail, avec ou sans abonnement Google One) : aucune restriction. Seul un compte Google Workspace géré par une organisation peut interdire l'accès « Tout le monde » ; repli dans ce cas : Cloud Run (`docs/01_ARCHITECTURE.md`, ADR-006).
 
 ## 5. Inviter un membre de l'équipe
 1. Modifiez le libellé dans `spectreCreateInvite` (`'membre-01'`, pseudonyme, jamais un vrai nom), puis *Exécuter*.

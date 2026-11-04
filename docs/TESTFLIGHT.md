@@ -1,21 +1,21 @@
 # SPECTRE Capture — Distribution TestFlight à l'équipe
 
-**Ne rien publier avant** : build et tests Mac réussis, tests iPhone réussis, revue sécurité UNIL. Chaque étape ci-dessous nécessite votre compte Apple ; rien n'a été fait en votre nom.
+**Ne rien publier avant** : build et tests Mac réussis, tests iPhone réussis, vidéos fictives uniquement jusque-là. Chaque étape ci-dessous nécessite votre compte Apple ; rien n'a été fait en votre nom.
 
 ## 1. Compte
-- Apple Developer Program : **99 USD/an** (individuel ou organisation ; pour l'UNIL, une inscription *organisation* nécessite un numéro D-U-N-S et l'accord juridique de l'institution). https://developer.apple.com/programs/
+- Apple Developer Program : **99 USD/an** (99 CHF en Suisse), inscription **individuelle** avec votre identifiant Apple ; le nom affiché comme développeur dans TestFlight sera votre nom. https://developer.apple.com/programs/
 - Rôles App Store Connect : vous (Admin) ; éventuellement un second responsable (App Manager) pour la continuité.
 
 ## 2. Identité de l'app
-1. developer.apple.com → *Identifiers* → nouvel App ID explicite = votre bundle id (ex. `ch.unil.<labo>.spectrecapture`). Capacités : aucune supplémentaire n'est requise (le Keychain et les tâches d'arrière-plan n'en demandent pas).
-2. App Store Connect → *Mes apps* → *+* → nom unique (ex. « SPECTRE Capture UNIL »), langue Français, bundle id ci-dessus, SKU libre.
+1. developer.apple.com → *Identifiers* → nouvel App ID explicite = votre bundle id (ex. `ch.<votre-nom>.spectrecapture`). Capacités : aucune supplémentaire n'est requise (le Keychain et les tâches d'arrière-plan n'en demandent pas).
+2. App Store Connect → *Mes apps* → *+* → nom unique (ex. « SPECTRE Capture Stan »), langue Français, bundle id ci-dessus, SKU libre.
 3. `./scripts/configure_signing.sh <bundle_id> <TEAM_ID>`, puis signature automatique dans Xcode.
 
 ## 3. Version
 Dans la cible *Tella* : *Version* (MARKETING_VERSION, actuellement 3.3.0 hérité de Tella ; choisissez p. ex. `1.0.0`) et *Build* (CURRENT_PROJECT_VERSION) à incrémenter à chaque envoi.
 
 ## 4. Conformité export (chiffrement)
-`Info.plist` contient `ITSAppUsesNonExemptEncryption = false` (hérité de Tella). L'app n'utilise que du chiffrement standard (HTTPS, AES pour la protection des données locales, CryptoKit), ce qui relève en général de l'exemption. **Confirmez avec le service juridique UNIL** ; si l'app est distribuée en France, Apple peut exiger une déclaration ANSSI.
+`Info.plist` contient `ITSAppUsesNonExemptEncryption = false` (hérité de Tella). L'app n'utilise que du chiffrement standard (HTTPS, AES pour la protection des données locales, CryptoKit), ce qui relève en général de l'exemption. À la question d'Apple sur le chiffrement, répondez en cohérence avec ce réglage (chiffrement standard / exempté). Si vous rendez l'app disponible en France, Apple peut demander une déclaration ANSSI : limitez la disponibilité à la Suisse si ce n'est pas nécessaire.
 
 ## 5. Envoi
 Xcode → destination *Any iOS Device (arm64)* → *Product > Archive* → *Distribute App* → *TestFlight & App Store* (ou *TestFlight Internal Only*) → *Upload*. Le traitement prend 10–30 min.
@@ -39,4 +39,4 @@ Xcode → destination *Any iOS Device (arm64)* → *Product > Archive* → *Dist
 5. Vidéos non encore déposées sur le téléphone perdu : protégées par le code Tella et la protection de données iOS, mais **considérées comme potentiellement perdues**.
 
 ## 9. Fin du projet
-Supprimez les testeurs, laissez expirer les builds, `spectreRevokeAllDevices`, archivez puis supprimez le projet Apps Script selon la politique de conservation UNIL.
+Supprimez les testeurs, laissez expirer les builds, `spectreRevokeAllDevices`, archivez puis supprimez le projet Apps Script quand vous n'en avez plus besoin.

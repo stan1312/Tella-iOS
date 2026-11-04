@@ -3,7 +3,7 @@
 Application iOS de captation vidéo pour une équipe de recherche, dérivée de [Tella iOS](https://github.com/Horizontal-org/Tella-iOS) (MIT, © HORIZONTAL ; voir `NOTICE.md` et `README_TELLA.md`).
 Chaque vidéo filmée est déposée dans **un dossier Google Drive privé du responsable**, puis supprimée du téléphone **uniquement** après un reçu vérifié par le serveur (taille exacte + SHA-256). Les téléphones peuvent déposer, jamais lire, lister, télécharger ni supprimer les archives.
 
-> **Statut : READY_FOR_OWNER_INTEGRATION.** La logique de dépôt et le backend sont testés sur un Drive simulé (58 tests automatisés exécutés et réussis). Le **build iOS n'a pas été vérifié** (aucun Mac disponible pendant le développement) : ce n'est pas un « build validé ». Données synthétiques uniquement tant que la revue sécurité UNIL n'est pas faite.
+> **Statut : READY_FOR_OWNER_INTEGRATION.** La logique de dépôt et le backend sont testés sur un Drive simulé (58 tests automatisés exécutés et réussis). Le **build iOS n'a pas été vérifié** (aucun Mac disponible pendant le développement) : ce n'est pas un « build validé ». Vidéos fictives uniquement tant que les tests réels (Mac, Google, iPhone) ne sont pas concluants.
 
 ## Architecture (résumé)
 ```

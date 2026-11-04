@@ -34,7 +34,7 @@ Ouvrez `Tella.xcworkspace` (pas le `.xcodeproj`), schéma `Tella`, un simulateur
 
 ## 5. Identité et signature (avant tout iPhone ou TestFlight)
 ```bash
-./scripts/configure_signing.sh ch.unil.<votre-labo>.spectrecapture <TEAM_ID>
+./scripts/configure_signing.sh ch.<votre-nom>.spectrecapture <TEAM_ID>
 ```
 Remplace l'identifiant de bundle Tella (`org.wearehorizontal.tella`) et l'équipe Horizontal par les vôtres (Team ID : developer.apple.com → Account → Membership details). Dans Xcode : cible *Tella* → *Signing & Capabilities* → cochez *Automatically manage signing*, choisissez votre équipe. La cible d'extension éventuelle et `VaultManager` gardent leur configuration de bibliothèque.
 

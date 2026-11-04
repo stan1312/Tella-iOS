@@ -44,7 +44,7 @@
 2. Mac : `docs/INSTALL_MAC.md` (build + tests, ~30 min hors téléchargement de Xcode).
 3. Google : `docs/SETUP_GOOGLE_DRIVE.md` avec un compte de test.
 4. iPhone : `docs/TEST_IPHONE.md`.
-5. Revue sécurité UNIL et avis DPO.
+5. Relecture sécurité recommandée (par une personne de confiance) avant les vraies données.
 6. Apple Developer Program (99 USD/an) puis `docs/TESTFLIGHT.md`.
 
 ## 6. Points de vigilance

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPECTRE Capture — sets YOUR bundle identifier and Apple team on the app target.
-# Usage: ./scripts/configure_signing.sh ch.unil.<votre-labo>.spectrecapture ABCDE12345
+# Usage: ./scripts/configure_signing.sh ch.<votre-nom>.spectrecapture ABCDE12345
 # (Team ID : developer.apple.com > Account > Membership details). Nothing is sent anywhere.
 set -euo pipefail
 cd "$(dirname "$0")/.."

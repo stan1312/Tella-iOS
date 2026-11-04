@@ -1,6 +1,6 @@
 # SPECTRE Capture — Modèle de menaces (STRIDE)
 
-Statut : **à faire valider par la sécurité informatique UNIL** avant toute donnée de terrain réelle.
+Statut : **relecture sécurité recommandée** avant toute donnée de terrain réelle. Déploiement prévu : compte Google **personnel** du responsable (avec abonnement de stockage), dont il est le seul administrateur.
 Ce document décrit le système tel qu'il est implémenté dans ce dépôt (branche `feature/spectre-deposit-drive`).
 Les tests cités sont des tests réellement exécutés sur le mock (voir `docs/TEST_REPORT.md`). Un comportement observé sur le mock ne prouve rien sur Google Drive réel.
 
@@ -45,7 +45,7 @@ Frontières : (A) téléphone ↔ Apps Script (HTTPS, requêtes signées HMAC) ;
 - `DeletionCoordinator` re-vérifie le reçu au moment de supprimer.
 
 ### S6 — Compte Google du propriétaire compromis
-- Hors du contrôle de l'application : un attaquant avec le compte du propriétaire lit tout le Drive. Mitigations organisationnelles : compte dédié, 2FA matérielle, Advanced Protection recommandée, aucun autre usage du compte. Le téléphone ne détient aucun moyen d'accès à ce compte.
+- Hors du contrôle de l'application : un attaquant avec le compte du propriétaire lit tout le Drive. Le compte étant **personnel** (Gmail, photos, autres fichiers), sa compromission exposerait aussi les vidéos : validation en deux étapes obligatoire (clé de sécurité ou application d'authentification, pas de SMS), Protection Avancée Google recommandée, vérifier régulièrement les appareils connectés et les applications autorisées. Le scope `drive.file` garantit seulement que le script SPECTRE ne voit que ses propres fichiers, pas le reste du Drive. Le téléphone ne détient aucun moyen d'accès à ce compte.
 
 ### S7 — Script Properties
 - **I** : les secrets HMAC des appareils sont stockés dans les Script Properties du projet Apps Script. Toute personne éditrice du projet peut les lire. Mitigation : projet non partagé, propriétaire unique ; `spectreRevokeAllDevices` en cas de doute. Résiduel accepté pour la solution « Apps Script d'abord » ; l'alternative Cloud Run + Secret Manager est décrite dans `docs/01_ARCHITECTURE.md` (ADR).
@@ -67,7 +67,7 @@ Frontières : (A) téléphone ↔ Apps Script (HTTPS, requêtes signées HMAC) ;
 - **R** : chaque fichier Drive porte `appProperties` (`spectreUploadId`, `spectreCaptureId`, `spectreDeviceId`) et un nom contenant l'appareil ; le backend conserve l'état par upload pendant 30 jours. Pas de signature par l'appareil de l'heure de capture : l'horodatage de nom est celui du serveur.
 
 ### S13 — Confidentialité vis-à-vis de Google
-- Les vidéos sont stockées **en clair chez Google** (le chiffrement outbox ne couvre que le téléphone). Google, en tant que sous-traitant, et toute réquisition visant le compte du propriétaire y ont accès. Décision à prendre avec le DPO/UNIL : acceptable ou non selon la sensibilité ; un chiffrement de bout en bout (clé publique de l'équipe) casserait la vérification SHA-256 côté Drive telle que conçue et est hors périmètre.
+- Les vidéos sont stockées **en clair chez Google** (le chiffrement outbox ne couvre que le téléphone). Google, en tant que sous-traitant, et toute réquisition visant le compte du propriétaire y ont accès. Décision du responsable : acceptable ou non selon la sensibilité des images et les personnes filmées ; un chiffrement de bout en bout (clé publique de l'équipe) casserait la vérification SHA-256 côté Drive telle que conçue et est hors périmètre.
 
 ### S14 — Droit à l'effacement / gouvernance
 - La suppression des archives se fait par le propriétaire dans Drive (le système n'offre volontairement aucune suppression distante). Prévoir une procédure écrite (qui demande, qui supprime, corbeille Drive vidée).
@@ -83,6 +83,6 @@ Frontières : (A) téléphone ↔ Apps Script (HTTPS, requêtes signées HMAC) ;
 8. Build iOS et comportement en arrière-plan **non vérifiés** (pas de Mac ici).
 
 ## 4. Validation requise
-- Revue sécurité UNIL (ce document + `docs/01_ARCHITECTURE.md` + code `SpectreCore/` et `backend/apps-script/src/`).
-- Avis DPO sur S13/S14.
-- Tant que ces validations ne sont pas obtenues : médias synthétiques et Drive de test uniquement.
+- Relecture sécurité recommandée (ce document + `docs/01_ARCHITECTURE.md` + code `SpectreCore/` et `backend/apps-script/src/`).
+- Réflexion du responsable sur S13/S14 (confidentialité chez Google, effacement), selon les personnes filmées.
+- Tant que les tests réels (Mac, Google, iPhone) ne sont pas concluants : vidéos fictives et dossier de test uniquement.
