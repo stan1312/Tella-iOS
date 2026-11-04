@@ -7,7 +7,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public struct HTTPRequest: Sendable {
+public struct SpectreHTTPRequest: Sendable {
     public var method: String
     public var url: URL
     public var headers: [String: String]
@@ -17,7 +17,7 @@ public struct HTTPRequest: Sendable {
     }
 }
 
-public struct HTTPResponse: Sendable {
+public struct SpectreHTTPResponse: Sendable {
     public var status: Int
     /// Header names are lower-cased.
     public var headers: [String: String]
@@ -29,13 +29,13 @@ public struct HTTPResponse: Sendable {
     }
 }
 
-public protocol HTTPTransport: Sendable {
-    func send(_ request: HTTPRequest) async throws -> HTTPResponse
+public protocol SpectreHTTPTransport: Sendable {
+    func send(_ request: SpectreHTTPRequest) async throws -> SpectreHTTPResponse
 }
 
 /// Foreground URLSession transport (works on iOS, macOS and Linux).
 /// Uses an ephemeral configuration: no cookies, no URL cache on disk.
-public final class URLSessionTransport: HTTPTransport, @unchecked Sendable {
+public final class URLSessionTransport: SpectreHTTPTransport, @unchecked Sendable {
     private let session: URLSession
 
     public init(timeout: TimeInterval = 60) {
@@ -49,7 +49,7 @@ public final class URLSessionTransport: HTTPTransport, @unchecked Sendable {
 
     public init(session: URLSession) { self.session = session }
 
-    public func send(_ request: HTTPRequest) async throws -> HTTPResponse {
+    public func send(_ request: SpectreHTTPRequest) async throws -> SpectreHTTPResponse {
         var r = URLRequest(url: request.url)
         r.httpMethod = request.method
         r.httpBody = request.body
@@ -72,7 +72,7 @@ public final class URLSessionTransport: HTTPTransport, @unchecked Sendable {
                 for (k, v) in http.allHeaderFields {
                     if let ks = k as? String { headers[ks.lowercased()] = "\(v)" }
                 }
-                cont.resume(returning: HTTPResponse(status: http.statusCode, headers: headers, body: data ?? Data()))
+                cont.resume(returning: SpectreHTTPResponse(status: http.statusCode, headers: headers, body: data ?? Data()))
             }
             task.resume()
         }

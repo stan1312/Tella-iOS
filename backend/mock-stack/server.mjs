@@ -34,6 +34,7 @@ export async function startMockStack({ port = 0, redirectLikeAppsScript = true }
 
   server.on('request', async (req, res) => {
     try {
+      if (Date.now() < drive.offlineUntil && !req.url.startsWith('/__')) { req.socket.destroy(); return; }
       const u = new URL(req.url, base);
       if (await drive.handleUpload(req, res)) return;
 
@@ -70,9 +71,14 @@ export async function startMockStack({ port = 0, redirectLikeAppsScript = true }
       if (u.pathname === '/__admin/revoke') return json(res, 200, { ok: gas.revoke(u.searchParams.get('deviceId')) });
       if (u.pathname === '/__admin/devices') return json(res, 200, gas.listDevices());
       if (u.pathname === '/__admin/logs') return json(res, 200, { logs: gas.logs, props: [...gas.props.keys()] });
+      if (u.pathname === '/__owner/content') {
+        const f = drive.files.get(u.searchParams.get('id'));
+        if (!f || !f.path) return json(res, 404, {});
+        res.writeHead(200, { 'Content-Type': 'application/octet-stream' }); fs.createReadStream(f.path).pipe(res); return;
+      }
       if (u.pathname === '/__owner/files') {
         const files = [...drive.files.values()].filter((f) => f.path).map((f) => ({ id: f.id, name: f.name, size: f.size, sha256: f.sha256, md5: f.md5, parents: f.parents, appProperties: f.appProperties }));
-        return json(res, 200, { files, sessions: drive.sessions.size, requests: drive.requests.length });
+        return json(res, 200, { files, sessions: drive.sessions.size, requests: drive.requests.length, dropsDone: drive.dropsDone });
       }
 
       // ---------- anything else is the Drive REST surface (metadata) over HTTP
@@ -85,7 +91,10 @@ export async function startMockStack({ port = 0, redirectLikeAppsScript = true }
     }
   });
 
-  return { base, webAppUrl, drive, get gas() { return gas; }, ownerToken, close: () => new Promise((r) => { server.closeAllConnections?.(); server.close(r); }) };
+  const cleanup = () => { try { fs.rmSync(drive.dataDir, { recursive: true, force: true }); } catch {} };
+  process.once('exit', cleanup);
+  return { base, webAppUrl, drive, get gas() { return gas; }, ownerToken,
+    close: () => new Promise((r) => { server.closeAllConnections?.(); server.close(() => { cleanup(); r(); }); }) };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -94,5 +103,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const s = await startMockStack({ port, redirectLikeAppsScript: redirect });
   console.log(`MOCK_STACK_READY ${s.base}`);
   process.stdin.on('end', () => process.exit(0));   // dies with the parent test process
+  process.on('SIGTERM', () => process.exit(0));
   process.stdin.resume();
 }

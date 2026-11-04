@@ -50,6 +50,9 @@ class MainAppModel: ObservableObject {
     var networkMonitor: NetworkMonitor
     var nearbySharingServer: NearbySharingServer?
     let uploadService: UploadService
+
+    // SPECTRE Capture: deposit-only upload queue (independent of the visible screen).
+    lazy var spectre: SpectreDepositService = SpectreDepositService(mainAppModel: self)
     
     private var cancellable: Set<AnyCancellable> = []
     
@@ -95,6 +98,8 @@ class MainAppModel: ObservableObject {
                 
                 self.initDataSource()
                 self.initAutoUpload()
+                // SPECTRE: the vault is unlocked → build pending outboxes, resume deposits.
+                self.spectre.prepareAwaitingCaptures()
             })
             .store(in: &cancellable)
     }
@@ -193,6 +198,9 @@ extension MainAppModel {
         resetSettings()
         resetData()
         vaultManager.deleteContainerDirectory()
+        // SPECTRE: same protective wipe for the deposit queue, outbox and keys.
+        SpectreStorage.wipeAll()
+        SpectreKeychainSecretStore().deleteAll()
     }
 }
 

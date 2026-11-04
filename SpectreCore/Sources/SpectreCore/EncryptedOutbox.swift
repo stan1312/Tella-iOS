@@ -49,7 +49,7 @@ public final class EncryptedOutbox: @unchecked Sendable {
         try secrets.set(keyData, for: SecretKeys.outboxKey(captureId))
 
         let out = containerURL(captureId)
-        FileManager.default.createFile(atPath: out.path, contents: nil)
+        guard FileManager.default.createFile(atPath: out.path, contents: nil) else { throw SpectreError.outboxCorrupted }
         didCreateFile?(out)
         let w = try FileHandle(forWritingTo: out)
         let r = try FileHandle(forReadingFrom: plaintextURL)

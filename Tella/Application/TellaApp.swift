@@ -31,7 +31,14 @@ struct TellaApp: App {
                     if UIApplication.shared.applicationState == .background {
                         self.saveData(lockAppType: .finishBackgroundTasks)
                     }
-                }.onReceive(appDelegate.$appWillTerminate) { willTerminate in
+                }
+                .onOpenURL { url in
+                    // SPECTRE: individual invitation link (spectre://enroll?…)
+                    guard url.scheme == "spectre" else { return }
+                    let service = appViewState.homeViewModel.spectre
+                    Task { _ = await service.enroll(with: url.absoluteString) }
+                }
+                .onReceive(appDelegate.$appWillTerminate) { willTerminate in
                     if willTerminate {
                         clearTmpDirectory()
                     }

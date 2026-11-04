@@ -30,6 +30,9 @@ struct HomeView: View {
         VStack() {
             ScrollView {
                 VStack {
+                    // SPECTRE Capture deposit status
+                    SpectreHomeCard(service: mainAppModel.spectre)
+                        .padding(.top, 12)
                     Spacer()
                         .frame( height: !viewModel.serverDataItemArray.isEmpty ? 16 : 0 )
                     ConnectionsView(homeViewModel: viewModel)

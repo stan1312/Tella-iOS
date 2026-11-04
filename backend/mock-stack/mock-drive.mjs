@@ -23,6 +23,8 @@ export class MockDrive {
     this.files = new Map();
     this.faults = {};
     this.requests = [];
+    this.dropsDone = 0;
+    this.offlineUntil = 0;
     this.folderId = 'fld_' + crypto.randomBytes(8).toString('hex');
     this.files.set(this.folderId, { id: this.folderId, name: 'SPECTRE_DEPOT_TEST', mimeType: 'application/vnd.google-apps.folder', parents: [], appProperties: {} });
   }
@@ -156,6 +158,9 @@ export class MockDrive {
         if (c.length) { fs.writeSync(fd, c, 0, c.length, pos); pos += c.length; }
         if (aborted) {
           s.drops.shift();
+          this.dropsDone++;
+          // the network stays down briefly so that transparent client retries also fail
+          this.offlineUntil = Date.now() + (this.faults.offlineMsAfterDrop ?? 400);
           req.socket.destroy();     // simulated network cut
           resolve();
         }

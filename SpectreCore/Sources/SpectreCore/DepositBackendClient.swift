@@ -47,10 +47,10 @@ public protocol DepositBackend: Sendable {
 }
 
 public final class HTTPDepositBackend: DepositBackend, @unchecked Sendable {
-    private let transport: HTTPTransport
+    private let transport: SpectreHTTPTransport
     private let clock: @Sendable () -> Date
 
-    public init(transport: HTTPTransport, clock: @escaping @Sendable () -> Date = { Date() }) {
+    public init(transport: SpectreHTTPTransport, clock: @escaping @Sendable () -> Date = { Date() }) {
         self.transport = transport; self.clock = clock
     }
 
@@ -82,7 +82,7 @@ public final class HTTPDepositBackend: DepositBackend, @unchecked Sendable {
         }
         let body = try JSONEncoder().encode(env)
         // text/plain avoids a CORS preflight and is what Apps Script expects in e.postData.
-        let resp = try await transport.send(HTTPRequest(method: "POST", url: endpoint,
+        let resp = try await transport.send(SpectreHTTPRequest(method: "POST", url: endpoint,
                                                         headers: ["Content-Type": "text/plain;charset=utf-8"],
                                                         body: body))
         guard (200..<300).contains(resp.status) else {

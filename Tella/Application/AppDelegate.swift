@@ -22,6 +22,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         UIApplication.shared.setupApperance()
         setupDropbox()
         configureGoogleSignIn()
+        // SPECTRE: best-effort background resumption of deposits (iOS decides when).
+        SpectreDepositService.registerBackgroundTask { SpectreDepositService.current }
         return true
     }
     

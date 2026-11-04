@@ -12,10 +12,10 @@ public enum UploadProbe: Equatable, Sendable {
 
 public struct ResumableUploader: Sendable {
     public static let granularity = 256 * 1024
-    public let transport: HTTPTransport
+    public let transport: SpectreHTTPTransport
     public let chunkSize: Int
 
-    public init(transport: HTTPTransport, chunkSize: Int = 8 * 1024 * 1024) {
+    public init(transport: SpectreHTTPTransport, chunkSize: Int = 8 * 1024 * 1024) {
         precondition(chunkSize % Self.granularity == 0, "Drive requires chunks that are multiples of 256 KiB")
         self.transport = transport
         self.chunkSize = chunkSize
@@ -23,12 +23,12 @@ public struct ResumableUploader: Sendable {
 
     /// Asks Drive how many bytes it has durably received.
     public func probe(session: URL, total: UInt64) async throws -> UploadProbe {
-        let r = try await transport.send(HTTPRequest(method: "PUT", url: session,
+        let r = try await transport.send(SpectreHTTPRequest(method: "PUT", url: session,
                                                      headers: ["Content-Range": "bytes */\(total)"], body: nil))
         return try interpret(r, total: total)
     }
 
-    func interpret(_ r: HTTPResponse, total: UInt64) throws -> UploadProbe {
+    func interpret(_ r: SpectreHTTPResponse, total: UInt64) throws -> UploadProbe {
         switch r.status {
         case 200, 201:
             let obj = try? JSONSerialization.jsonObject(with: r.body) as? [String: Any]
@@ -76,7 +76,7 @@ public struct ResumableUploader: Sendable {
                 let len = Int(min(UInt64(chunkSize), total - offset))
                 let chunk = try read(offset, len)
                 guard chunk.count == len else { throw SpectreError.outboxRange }
-                let r = try await transport.send(HTTPRequest(
+                let r = try await transport.send(SpectreHTTPRequest(
                     method: "PUT", url: session,
                     headers: ["Content-Range": "bytes \(offset)-\(offset + UInt64(len) - 1)/\(total)",
                               "Content-Type": "application/octet-stream"],
