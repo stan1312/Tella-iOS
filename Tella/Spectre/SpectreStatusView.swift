@@ -30,6 +30,7 @@ struct SpectreStatusView: View {
                 } footer: {
                     Text("Une vidéo non confirmée est encore sur ce téléphone. iOS peut retarder l'envoi en arrière-plan ; ouvrez l'application pour le relancer. Cette application ne donne aucun accès au Drive.")
                 }
+                SpectreVideoModeSection()
                 Section("Vidéos") {
                     if service.records.isEmpty { Text("Aucune vidéo en attente").foregroundColor(.secondary) }
                     ForEach(service.records, id: \.captureId) { r in
@@ -41,6 +42,33 @@ struct SpectreStatusView: View {
             .sheet(isPresented: $showEnrollment) { SpectreEnrollmentView(service: service) }
         }
         .navigationViewStyle(.stack)
+    }
+}
+
+/// Opt-in video quality (off by default = Tella's standard preset). Only modes the
+/// device actually reports are offered; applied at the next camera opening.
+struct SpectreVideoModeSection: View {
+    @State private var modes: [SpectreVideoMode] = []
+    @State private var selection: SpectreVideoMode? = SpectreVideoSettings.selectedMode
+
+    var body: some View {
+        Section {
+            Picker("Qualité vidéo", selection: $selection) {
+                Text("Standard (Tella)").tag(SpectreVideoMode?.none)
+                ForEach(modes, id: \.self) { mode in
+                    Text(mode.label).tag(Optional(mode))
+                }
+            }
+            .accessibilityIdentifier("spectre.videoMode")
+            .onChange(of: selection) { newValue in
+                SpectreVideoSettings.selectedMode = newValue
+            }
+        } header: {
+            Text("Vidéo")
+        } footer: {
+            Text("Options détectées sur cet iPhone. La 4K produit des fichiers très volumineux : vérifiez l'espace libre et le réseau avant le terrain.")
+        }
+        .onAppear { modes = SpectreVideoCapabilities.detect().modes }
     }
 }
 

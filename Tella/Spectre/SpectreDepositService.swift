@@ -159,6 +159,26 @@ final class SpectreDepositService: ObservableObject, @unchecked Sendable {
         }
     }
 
+    // MARK: - Tella quick delete
+
+    /// Tella "quick delete": the user wants no video left on this phone, deposited or not.
+    /// Removes queue records, encrypted outbox copies and their per-capture keys
+    /// (crypto-erase); keeps the device enrolment. Captures not yet deposited are lost
+    /// on purpose — that is what the user asked for.
+    func wipeQueuedCaptures() {
+        Task {
+            let ids = ((try? await engine?.allRecords()) ?? []).map(\.captureId)
+            for id in ids {
+                try? secrets.delete(SecretKeys.outboxKey(id))
+                try? secrets.delete(SecretKeys.session(id))
+            }
+            try? FileManager.default.removeItem(at: SpectreStorage.queueDirectory)
+            try? FileManager.default.removeItem(at: SpectreStorage.outboxDirectory)
+            SpectreStorage.prepareDirectories()
+            await refresh()
+        }
+    }
+
     // MARK: - Enrolment
 
     func enroll(with payload: String) async -> Bool {

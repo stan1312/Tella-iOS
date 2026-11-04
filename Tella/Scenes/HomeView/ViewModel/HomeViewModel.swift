@@ -79,6 +79,8 @@ class HomeViewModel: ObservableObject {
     
     func deleteAllVaultFiles()   {
         mainAppModel.vaultFilesManager?.deleteAllVaultFiles()
+        // SPECTRE: quick delete must not leave encrypted deposit copies behind.
+        mainAppModel.spectre.wipeQueuedCaptures()
     }
     
     func deleteAllServersConnection()   {

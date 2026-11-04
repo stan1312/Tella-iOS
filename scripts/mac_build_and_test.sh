@@ -16,7 +16,9 @@ xcodebuild -workspace Tella.xcworkspace -scheme Tella -configuration Debug \
   CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$OUT/build.log" | tail -5
 echo "== Tests unitaires de l'app (TellaTests, dont SpectreIntegrationTests)"
 xcodebuild -workspace Tella.xcworkspace -scheme Tella -destination "platform=iOS Simulator,name=$SIM" \
-  -derivedDataPath build/dd -only-testing:TellaTests CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$OUT/apptests.log" | tail -15 || true
+  -derivedDataPath build/dd -only-testing:TellaTests CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$OUT/apptests.log" | tail -15 \
+  && APPTESTS=PASS || APPTESTS=FAIL
+echo "TellaTests : $APPTESTS (détail : $OUT/apptests.log)"
 echo "== SpectreCore + backend + scénarios"
 ./scripts/run_all_tests.sh 2>&1 | tee "$OUT/core.log" | tail -5
 echo "== Contrôle du binaire : aucun identifiant propriétaire embarqué"
@@ -27,3 +29,4 @@ if [ -n "$APP" ]; then
   else echo "BINAIRE: aucun jeton/secret Google détecté ($APP)"; fi
 fi
 echo "Terminé. Journaux : $OUT/"
+[ "$APPTESTS" = PASS ] || { echo "ATTENTION : des tests de l'app ont échoué ; ne pas considérer le build comme validé."; exit 1; }
