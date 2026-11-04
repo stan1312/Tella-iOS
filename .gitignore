@@ -101,3 +101,12 @@ iOSInjectionProject/
 .idea
 
 Tella/Supporting Files/TellaConfig.xcconfig
+
+# SPECTRE Capture
+SpectreCore/.build/
+SpectreCore/.swiftpm/
+backend/node_modules/
+tests/fixtures/generated/
+.env
+*.local.json
+dist/
