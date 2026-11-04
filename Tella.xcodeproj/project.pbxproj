@@ -365,7 +365,6 @@
 		1293547B294A454900735ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293547A294A454900735ED0 /* AppDelegate.swift */; };
 		12937FE22DC227B30019ECC4 /* AVPlayerItem+VideoRotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12937FE12DC227A90019ECC4 /* AVPlayerItem+VideoRotation.swift */; };
 		1293800D2DC284D50019ECC4 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 129380092DC284D50019ECC4 /* Localizable.strings */; };
-		1293800E2DC284D50019ECC4 /* TellaConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1293800B2DC284D50019ECC4 /* TellaConfig.xcconfig */; };
 		129380102DC284D50019ECC4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 12937FF52DC284D50019ECC4 /* LaunchScreen.storyboard */; };
 		1293F6662AD7E52800F6CFBD /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F6652AD7E52800F6CFBD /* FeedbackView.swift */; };
 		1293F6682AD7EF3900F6CFBD /* CloseHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F6672AD7EF3900F6CFBD /* CloseHeaderView.swift */; };
@@ -4323,7 +4322,6 @@
 				12567FF32716E33500A2D356 /* OpenSans-Regular.ttf in Resources */,
 				D51639762631091E003A11B5 /* NewAssets.xcassets in Resources */,
 				1293800D2DC284D50019ECC4 /* Localizable.strings in Resources */,
-				1293800E2DC284D50019ECC4 /* TellaConfig.xcconfig in Resources */,
 				129380102DC284D50019ECC4 /* LaunchScreen.storyboard in Resources */,
 				128777C52718D25E000624E2 /* OpenSans-Light.ttf in Resources */,
 				F66E65B323E32080000F93E5 /* Assets.xcassets in Resources */,

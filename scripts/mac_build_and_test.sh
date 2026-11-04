@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 OUT=test-results/mac; mkdir -p "$OUT"
 SIM="${SIM:-iPhone 15}"
 ./scripts/check_env_mac.sh || true
+CFG="Tella/Supporting Files/TellaConfig.xcconfig"
+[ -f "$CFG" ] || { cp "$CFG.example" "$CFG"; echo "TellaConfig.xcconfig créé depuis l'exemple (connecteurs Tella désactivés)"; }
 echo "== CocoaPods"; pod install 2>&1 | tee "$OUT/pod.log" | tail -3
 echo "== Projet Xcode (idempotent)"; ruby scripts/xcode_integrate_spectre.rb || echo "xcodeproj gem absent: fichiers déjà intégrés au dépôt"
 echo "== Build simulateur (sans signature)"

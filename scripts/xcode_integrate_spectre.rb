@@ -47,5 +47,11 @@ if tests
   n3 = add_files(project, tests_group, File.join(root, 'TellaTests'), 'Spectre*.swift', tests) if tests_group
 end
 
+# The build-settings xcconfig must not be copied into the app bundle (Tella ships it as a resource).
+app.resources_build_phase.files.select { |bf| bf.file_ref && bf.file_ref.path.to_s.end_with?('TellaConfig.xcconfig') }.each do |bf|
+  app.resources_build_phase.remove_build_file(bf)
+  puts 'removed TellaConfig.xcconfig from Copy Bundle Resources'
+end
+
 project.save
 puts "SPECTRE files added: app=#{n1} core=#{n2} tests=#{n3}"
