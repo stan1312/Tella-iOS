@@ -1,0 +1,38 @@
+# SPECTRE Capture CI. Linux job = everything testable without Apple tooling.
+# macOS job = real iOS simulator build + app tests (no signing, no secrets).
+name: spectre-ci
+on:
+  push: { branches: [feature/spectre-deposit-drive] }
+  pull_request:
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node + ffmpeg
+        run: |
+          apt-get update -qq && apt-get install -y -qq nodejs ffmpeg git >/dev/null
+          node --version
+      - name: All mock tests (backend + SpectreCore T01–T14)
+        env: { SPECTRE_NODE: /usr/bin/node }
+        run: ./scripts/run_all_tests.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: test-results-linux, path: test-results/ }
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app && xcodebuild -version
+      - name: Tools
+        run: brew install ffmpeg cocoapods >/dev/null || true
+      - name: Build + tests (simulator, unsigned)
+        env: { SIM: "iPhone 15" }
+        run: ./scripts/mac_build_and_test.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: test-results-macos, path: test-results/ }

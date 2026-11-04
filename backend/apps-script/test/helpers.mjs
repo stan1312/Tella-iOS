@@ -54,7 +54,11 @@ export async function call(s, creds, action, payload, o) { return post(s, signed
 /** Phone-side resumable upload (probe → PUT chunks → follow 308 Range). */
 export async function uploadBytes(sessionUrl, buf, chunk = 256 * 1024 * 4) {
   const probe = async () => {
-    const r = await fetch(sessionUrl, { method: 'PUT', headers: { 'Content-Range': `bytes */${buf.length}` } });
+    let r;
+    for (let i = 0; ; i++) {   // network may be down for a moment after a cut
+      try { r = await fetch(sessionUrl, { method: 'PUT', headers: { 'Content-Range': `bytes */${buf.length}` } }); break; }
+      catch (e) { if (i > 20) throw e; await new Promise((ok) => setTimeout(ok, 100)); }
+    }
     if (r.status === 200 || r.status === 201) return { done: await r.json() };
     if (r.status === 308) { const rg = r.headers.get('range'); return { next: rg ? Number(rg.split('-')[1]) + 1 : 0 }; }
     throw new Error('probe ' + r.status);

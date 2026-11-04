@@ -110,3 +110,7 @@ tests/fixtures/generated/
 .env
 *.local.json
 dist/
+backend/apps-script/.clasp.json
+.clasprc.json
+test-results/
+build/
