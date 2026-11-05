@@ -4,7 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=test-results/mac; mkdir -p "$OUT"
-SIM="${SIM:-iPhone 15}"
+# Simulator: $SIM if given, otherwise the first available iPhone.
+SIM="${SIM:-$(xcrun simctl list devices available | grep -oE "iPhone [0-9A-Za-z ]+[0-9A-Za-z]" | head -1)}"
+echo "Simulateur : $SIM"
 ./scripts/check_env_mac.sh || true
 CFG="Tella/Supporting Files/TellaConfig.xcconfig"
 [ -f "$CFG" ] || { cp "$CFG.example" "$CFG"; echo "TellaConfig.xcconfig créé depuis l'exemple (connecteurs Tella désactivés)"; }

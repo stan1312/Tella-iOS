@@ -23,15 +23,17 @@ jobs:
         if: always()
         with: { name: test-results-linux, path: test-results/ }
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app && xcodebuild -version
+        run: |
+          # Tella 3.3 uses Swift 6 syntax (@retroactive): Xcode 16 or newer is required.
+          X=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1); echo "$X"
+          sudo xcode-select -s "$X" && xcodebuild -version
       - name: Tools
         run: brew install ffmpeg cocoapods >/dev/null || true
       - name: Build + tests (simulator, unsigned)
-        env: { SIM: "iPhone 15" }
         run: ./scripts/mac_build_and_test.sh
       - uses: actions/upload-artifact@v4
         if: always()

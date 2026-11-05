@@ -4,7 +4,7 @@ C'est l'étape qui permet d'affirmer « build iOS validé ». Elle n'a pas pu ê
 
 ## 1. Prérequis
 - macOS 14 ou plus, ~40 Go libres.
-- Xcode 15 ou plus (App Store), lancé une fois, avec un simulateur iOS installé (*Settings > Platforms*).
+- Xcode 16 ou plus (Tella 3.3 utilise la syntaxe Swift 6) (App Store), lancé une fois, avec un simulateur iOS installé (*Settings > Platforms*).
 - Homebrew (https://brew.sh), puis :
 ```bash
 brew install cocoapods node ffmpeg qrencode gitleaks
@@ -21,7 +21,7 @@ cd SPECTRE-Capture && git checkout feature/spectre-deposit-drive
 
 ## 3. Build + tests automatiques (sans signature, sans compte Apple)
 ```bash
-./scripts/mac_build_and_test.sh          # SIM="iPhone 15" par défaut ; SIM="iPhone 16" pour changer
+./scripts/mac_build_and_test.sh          # premier iPhone simulé disponible ; SIM="iPhone 16" pour choisir
 ```
 Ce script : crée `TellaConfig.xcconfig` depuis l'exemple (connecteurs Dropbox/Google Drive de Tella désactivés), `pod install`, build Debug pour simulateur, tests `TellaTests` (dont `SpectreIntegrationTests`), la suite SpectreCore + backend, puis vérifie qu'aucun jeton/secret Google n'est présent dans le binaire. Journaux : `test-results/mac/`.
 

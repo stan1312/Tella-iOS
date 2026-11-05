@@ -9,7 +9,7 @@ echo "SPECTRE Capture — vérification de l'environnement"
 if xcodebuild -version >/dev/null 2>&1; then
   v=$(xcodebuild -version | head -1); ok "$v"
   major=$(xcodebuild -version | head -1 | awk '{print $2}' | cut -d. -f1)
-  [ "${major:-0}" -ge 15 ] || ko "Xcode 15 ou plus récent requis (App Store > Xcode)"
+  [ "${major:-0}" -ge 16 ] || ko "Xcode 16 ou plus récent requis (Tella utilise la syntaxe Swift 6) : App Store > Xcode"
 else ko "Xcode absent : installez-le depuis l'App Store puis lancez-le une fois"; fi
 xcode-select -p >/dev/null 2>&1 && ok "xcode-select: $(xcode-select -p)" || ko "sudo xcode-select -s /Applications/Xcode.app"
 command -v brew >/dev/null && ok "Homebrew" || ko "Homebrew : https://brew.sh"
