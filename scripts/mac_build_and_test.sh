@@ -13,7 +13,13 @@ echo "== Projet Xcode (idempotent)"; ruby scripts/xcode_integrate_spectre.rb || 
 echo "== Build simulateur (sans signature)"
 xcodebuild -workspace Tella.xcworkspace -scheme Tella -configuration Debug \
   -destination "platform=iOS Simulator,name=$SIM" -derivedDataPath build/dd \
-  CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$OUT/build.log" | tail -5
+  CODE_SIGNING_ALLOWED=NO build > "$OUT/build.log" 2>&1 && BUILD=PASS || BUILD=FAIL
+tail -5 "$OUT/build.log"
+if [ "$BUILD" = FAIL ]; then
+  echo "== Erreurs de compilation (extrait de $OUT/build.log)"
+  grep -E "(error|fatal error):" "$OUT/build.log" | sort -u | head -80
+  exit 1
+fi
 echo "== Tests unitaires de l'app (TellaTests, dont SpectreIntegrationTests)"
 xcodebuild -workspace Tella.xcworkspace -scheme Tella -destination "platform=iOS Simulator,name=$SIM" \
   -derivedDataPath build/dd -only-testing:TellaTests CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$OUT/apptests.log" | tail -15 \
