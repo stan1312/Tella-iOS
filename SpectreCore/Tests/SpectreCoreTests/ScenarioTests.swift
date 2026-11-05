@@ -293,8 +293,9 @@ final class ScenarioTests: XCTestCase {
             if let probe = Self.ffprobe(src), let probe2 = Self.ffprobe(Self.write(downloaded)) {
                 XCTAssertEqual(probe, probe2, name)
                 if name.contains("meta") {
-                    XCTAssertTrue(probe.contains("creation_time=2026-11-04T12:00:00Z"))
-                    XCTAssertTrue(probe.contains("location=+00.0000+000.0000/"))
+                    // ffmpeg 6 prints "…12:00:00Z", ffmpeg 9 "…12:00:00.000000Z": compare up to the second.
+                    XCTAssertTrue(probe.contains("creation_time=2026-11-04T12:00:00"), probe)
+                    XCTAssertTrue(probe.contains("location=+00.0000+000.0000/"), probe)
                 }
             }
         }

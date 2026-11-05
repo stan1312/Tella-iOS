@@ -25,8 +25,10 @@ fi
 echo "== Tests SPECTRE dans l'app (cible SpectreAppTests, simulateur)"
 # Tella's own TellaTests target does not compile upstream (stale VaultManagerTests/ModelStubs/MockCryptoManager);
 # SPECTRE's app tests therefore live in their own target and scheme.
+# Ad-hoc signing ("-", no Apple account): an unsigned test host gets errSecMissingEntitlement (-34018) from the Keychain.
 xcodebuild -workspace Tella.xcworkspace -scheme SpectreAppTests -destination "platform=iOS Simulator,name=$SIM" \
-  -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO test > "$OUT/apptests.log" 2>&1 && APPTESTS=PASS || APPTESTS=FAIL
+  -derivedDataPath build/dd CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
+  test > "$OUT/apptests.log" 2>&1 && APPTESTS=PASS || APPTESTS=FAIL
 grep -E "Test Case .*(passed|failed)|error:|Executed [0-9]+ test" "$OUT/apptests.log" | sort -u | head -40
 echo "SpectreAppTests : $APPTESTS (détail : $OUT/apptests.log)"
 echo "== SpectreCore + backend + scénarios"
