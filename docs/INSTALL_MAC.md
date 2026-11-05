@@ -25,7 +25,7 @@ cd SPECTRE-Capture && git checkout feature/spectre-deposit-drive
 ```
 Ce script : crée `TellaConfig.xcconfig` depuis l'exemple (connecteurs Dropbox/Google Drive de Tella désactivés), `pod install`, build Debug pour simulateur, tests SPECTRE dans l'app (cible `SpectreAppTests`), la suite SpectreCore + backend, puis vérifie qu'aucun jeton/secret Google n'est présent dans le binaire. Journaux : `test-results/mac/`.
 
-Résultat attendu : `SpectreAppTests : PASS` et `BINAIRE: aucun jeton/secret Google détecté`. **Envoyez-moi les journaux en cas d'échec** : les erreurs de compilation Swift sont probables à ce premier passage, car le code iOS n'a jamais été compilé.
+Résultat attendu : `SpectreAppTests : PASS` et `BINAIRE: aucun jeton/secret Google détecté`. **Envoyez-moi les journaux en cas d'échec**. Le même script passe sur le CI GitHub (macos-15, Xcode 16.4).
 
 Après un `pod install` réussi, committez `Podfile.lock` pour figer les dépendances.
 

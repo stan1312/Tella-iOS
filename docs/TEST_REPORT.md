@@ -1,6 +1,6 @@
 # SPECTRE Capture — Rapport de test
 
-**Statut global : READY_FOR_OWNER_INTEGRATION**, avec réserve explicite : le critère « build iOS » n'est **pas** rempli (aucun Mac disponible ici). Ce n'est pas un « build validé ».
+**Statut global : READY_FOR_OWNER_INTEGRATION.** Build iOS **réussi** sur simulateur (CI GitHub macOS, 2026-11-05, voir §CI). Restent non vérifiés : appareil réel, Google réel, signature de distribution.
 
 ## Environnement d'exécution
 | Élément | Valeur |
@@ -55,11 +55,18 @@ Journaux bruts : `test-results/backend.log`, `test-results/spectrecore.log`, `te
 | Syntaxe JS | `node --check` sur les sources | PASS |
 | Shellcheck | `shellcheck scripts/*.sh` | PASS |
 
+## CI GitHub (stan1312/Tella-iOS, PR #1) — 2026-11-05, commit `edc0903f`
+| Job | Environnement | Résultat |
+|---|---|---|
+| `linux` | conteneur swift:6.0-noble | `RESULT: ALL PASSED` (backend 30/30, SpectreCore 28/28, secret scan) |
+| `macos` | macos-15, Xcode 16.4, simulateur iPhone 16 Pro | `** BUILD SUCCEEDED **` (app Debug simulateur, non signée) ; `SpectreAppTests : PASS` (5/5 : Keychain, identifiant de capture, protection/exclusion de sauvegarde, Info.plist, détection vidéo) ; SpectreCore 28/28 et backend 30/30 sur macOS ; contrôle du binaire : aucun jeton/secret Google |
+
+Corrections apportées pendant cette passe : Xcode 15.4 → 16 (Tella 3.3 utilise `@retroactive`) ; tests SPECTRE de l'app déplacés dans la cible `SpectreAppTests`, car la cible d'origine `TellaTests` (VaultManagerTests, ModelStubs, MockCryptoManager) ne compile plus contre Tella 3.3, indépendamment de SPECTRE ; hôte de test signé ad hoc (`-`) pour le Keychain du simulateur (erreur -34018 sinon) ; T12 tolère le format de date de ffmpeg 9.
+
 ## Non exécuté (SKIP — impossible ici)
 | Élément | Raison | Où le faire |
 |---|---|---|
-| Compilation Xcode de l'app, `SpectreAppTests/SpectreIntegrationTests.swift`, tests UI | Pas de macOS/Xcode | `scripts/mac_build_and_test.sh` |
-| CI GitHub (`.github/workflows/spectre-ci.yml`) | Aucun dépôt GitHub connecté | Après push sur votre fork |
+| Tests UI, build signé pour appareil | Compte Apple requis | `docs/TEST_IPHONE.md` |
 | Google Drive / Apps Script réels (liaison IP des sessions, PUT sans jeton, latence `sha256Checksum`, quotas Apps Script) | Aucun compte Google ; interdiction de déploiement réel | `docs/SETUP_GOOGLE_DRIVE.md` §8 |
 | Arrière-plan iOS réel, Keychain sur appareil, capture 4K matérielle, QR caméra, `onOpenURL` vs vues Dropbox/serveurs Tella | Pas d'iPhone | `docs/TEST_IPHONE.md` |
 | gitleaks | Non installé dans le conteneur | `brew install gitleaks` puis `scripts/secret_scan.sh` |

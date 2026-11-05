@@ -1,6 +1,6 @@
 # SPECTRE Capture — Dossier de passation
 
-**Statut : READY_FOR_OWNER_INTEGRATION** (date : 2026-11-04). Le critère « build iOS » n'est **pas** rempli : le code iOS (`Tella/Spectre/` et les retouches Tella) n'a jamais été compilé. Les sources iOS ont été écrites sans compilateur Apple : une première passe de corrections de compilation sur Mac est à prévoir.
+**Statut : READY_FOR_OWNER_INTEGRATION** (date : 2026-11-04). Build iOS **réussi** (CI GitHub macOS, Xcode 16.4, simulateur) et tests SPECTRE de l'app 5/5 ; voir `docs/TEST_REPORT.md` §CI. Restent : iPhone réel, Google réel, signature.
 
 ## 1. Ce qui est fait et vérifié
 - Cœur de dépôt `SpectreCore` (Swift) et service Apps Script : **58 tests exécutés et réussis** sur Drive simulé (30 backend + 28 Swift), T02 vérifié à 2,5 Go. Détails : `docs/TEST_REPORT.md`.
