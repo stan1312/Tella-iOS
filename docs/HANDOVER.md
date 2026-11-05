@@ -10,7 +10,7 @@
 | Élément | Fichiers | Vérification à faire |
 |---|---|---|
 | Intégration iOS | `Tella/Spectre/*.swift` | `scripts/mac_build_and_test.sh` |
-| Test d'intégration app | `TellaTests/SpectreIntegrationTests.swift` | idem |
+| Test d'intégration app | `SpectreAppTests/SpectreIntegrationTests.swift` | idem |
 | Projet Xcode modifié | `Tella.xcodeproj/project.pbxproj` (via `scripts/xcode_integrate_spectre.rb`) | ouverture dans Xcode |
 | CI | `.github/workflows/spectre-ci.yml` | premier push sur votre fork |
 | Service Google réel | `backend/apps-script/src/` | `docs/SETUP_GOOGLE_DRIVE.md` §8 |

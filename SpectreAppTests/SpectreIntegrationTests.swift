@@ -1,8 +1,8 @@
 //
 //  SPECTRE Capture — integration tests that need the iOS app target
 //  (Keychain, Application Support protection, Tella types). Run on macOS:
-//  xcodebuild test -workspace Tella.xcworkspace -scheme Tella -destination 'platform=iOS Simulator,name=iPhone 15'
-//  NOT executed in the Linux environment where SpectreCore was tested.
+//  xcodebuild test -workspace Tella.xcworkspace -scheme SpectreAppTests -destination 'platform=iOS Simulator,name=iPhone 16'
+//  Run in CI (macOS job of .github/workflows/spectre-ci.yml) and by scripts/mac_build_and_test.sh.
 //
 
 import XCTest

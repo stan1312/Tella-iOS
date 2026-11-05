@@ -22,13 +22,15 @@ if [ "$BUILD" = FAIL ]; then
   grep -E "(error|fatal error):" "$OUT/build.log" | sort -u | head -80
   exit 1
 fi
-echo "== Tests unitaires de l'app (TellaTests, dont SpectreIntegrationTests)"
-xcodebuild -workspace Tella.xcworkspace -scheme Tella -destination "platform=iOS Simulator,name=$SIM" \
-  -derivedDataPath build/dd -only-testing:TellaTests CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$OUT/apptests.log" | tail -15 \
-  && APPTESTS=PASS || APPTESTS=FAIL
-echo "TellaTests : $APPTESTS (détail : $OUT/apptests.log)"
+echo "== Tests SPECTRE dans l'app (cible SpectreAppTests, simulateur)"
+# Tella's own TellaTests target does not compile upstream (stale VaultManagerTests/ModelStubs/MockCryptoManager);
+# SPECTRE's app tests therefore live in their own target and scheme.
+xcodebuild -workspace Tella.xcworkspace -scheme SpectreAppTests -destination "platform=iOS Simulator,name=$SIM" \
+  -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO test > "$OUT/apptests.log" 2>&1 && APPTESTS=PASS || APPTESTS=FAIL
+grep -E "Test Case .*(passed|failed)|error:|Executed [0-9]+ test" "$OUT/apptests.log" | sort -u | head -40
+echo "SpectreAppTests : $APPTESTS (détail : $OUT/apptests.log)"
 echo "== SpectreCore + backend + scénarios"
-./scripts/run_all_tests.sh 2>&1 | tee "$OUT/core.log" | tail -5
+./scripts/run_all_tests.sh 2>&1 | tee "$OUT/core.log" | tail -60
 echo "== Contrôle du binaire : aucun identifiant propriétaire embarqué"
 APP=$(find build/dd -name "Tella.app" -type d | head -1)
 if [ -n "$APP" ]; then

@@ -13,7 +13,11 @@ if command -v ffmpeg >/dev/null; then ./scripts/make_fixtures.sh > "$OUT/fixture
 echo "== 3/3 SpectreCore (unit + end-to-end scenarios T01-T14)"
 command -v swift >/dev/null || { echo "swift introuvable (Xcode sur Mac, ou toolchain Swift sur Linux)"; exit 1; }
 (cd SpectreCore && swift test) 2>&1 | tee "$OUT/spectrecore.log" | grep -E "Test Case .*(passed|failed|skipped)|Executed .* tests" | tail -40
-[ "${PIPESTATUS[0]}" -eq 0 ] || status=1
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+  status=1
+  echo "-- SpectreCore failure details"
+  grep -E "error:|failed|Fatal error" "$OUT/spectrecore.log" | head -40
+fi
 echo "== secret scan"
 ./scripts/secret_scan.sh || status=1
 echo "RESULT: $([ $status -eq 0 ] && echo ALL PASSED || echo FAILURES — see $OUT/)"

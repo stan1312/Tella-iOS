@@ -7,7 +7,7 @@ Données : **exclusivement synthétiques** (octets pseudo-aléatoires détermini
 |---|---|---|---|
 | N1 Backend Apps Script | `backend/apps-script/test/` | `node --test` + runtime GAS simulé (`mock-stack/gas-runtime.mjs`) + faux Drive (`mock-drive.mjs`) | oui |
 | N2 Cœur Swift | `SpectreCore/Tests/` | XCTest via `swift test`, contre le mock HTTP réel (`mock-stack/server.mjs`) | oui (Linux ou macOS) |
-| N3 Intégration app | `TellaTests/SpectreIntegrationTests.swift` | Xcode, simulateur iOS | **non** (Mac requis) |
+| N3 Intégration app | `SpectreAppTests/SpectreIntegrationTests.swift` | Xcode, simulateur iOS | **non** (Mac requis) |
 | N4 Appareil réel | `docs/TEST_IPHONE.md` | iPhone + Drive de test | **non** |
 | N5 Google réel | `docs/SETUP_GOOGLE_DRIVE.md` §8 | Apps Script déployé sur un compte de test | **non** (compte requis) |
 

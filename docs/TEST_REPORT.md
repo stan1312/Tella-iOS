@@ -58,7 +58,7 @@ Journaux bruts : `test-results/backend.log`, `test-results/spectrecore.log`, `te
 ## Non exécuté (SKIP — impossible ici)
 | Élément | Raison | Où le faire |
 |---|---|---|
-| Compilation Xcode de l'app, `TellaTests/SpectreIntegrationTests.swift`, tests UI | Pas de macOS/Xcode | `scripts/mac_build_and_test.sh` |
+| Compilation Xcode de l'app, `SpectreAppTests/SpectreIntegrationTests.swift`, tests UI | Pas de macOS/Xcode | `scripts/mac_build_and_test.sh` |
 | CI GitHub (`.github/workflows/spectre-ci.yml`) | Aucun dépôt GitHub connecté | Après push sur votre fork |
 | Google Drive / Apps Script réels (liaison IP des sessions, PUT sans jeton, latence `sha256Checksum`, quotas Apps Script) | Aucun compte Google ; interdiction de déploiement réel | `docs/SETUP_GOOGLE_DRIVE.md` §8 |
 | Arrière-plan iOS réel, Keychain sur appareil, capture 4K matérielle, QR caméra, `onOpenURL` vs vues Dropbox/serveurs Tella | Pas d'iPhone | `docs/TEST_IPHONE.md` |

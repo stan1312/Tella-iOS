@@ -79,7 +79,7 @@ Branche de travail : `feature/spectre-deposit-drive`. `MARKETING_VERSION = 3.3.0
 - `MainAppModel.settings` (`SettingsModel`, JSON dans `UserDefaults` clé `com.tella.settings`) : `preserveMetadata`, `lockTimeout`, `quickDelete`, etc.
 
 ### Tests existants
-- `TellaTests/VaultManagerTests.swift` (4 tests + perf) avec `TellaTests/Mocks/MockCryptoManager.swift` ; `TellaUITests/TellaUITests.swift` (gabarit). **Non exécutés ici** (nécessitent Xcode).
+- `TellaTests/VaultManagerTests.swift` (4 tests + perf) avec `TellaTests/Mocks/MockCryptoManager.swift` ; `TellaUITests/TellaUITests.swift` (gabarit). **Non exécutés ici** (nécessitent Xcode). Ces tests Tella d'origine ne compilent plus avec Tella 3.3 (constaté sur le CI macOS, Xcode 16.4) ; les tests SPECTRE de l'app sont dans la cible séparée `SpectreAppTests`.
 
 ## 5. Conclusions pour la conception
 1. La caméra et le coffre sont réutilisables sans modification de leur chiffrement → stratégie **(A)+(B)** : crochets minimaux dans Tella + module isolé (`SpectreCore`, `Tella/Spectre/`).

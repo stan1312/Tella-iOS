@@ -23,9 +23,9 @@ cd SPECTRE-Capture && git checkout feature/spectre-deposit-drive
 ```bash
 ./scripts/mac_build_and_test.sh          # premier iPhone simulé disponible ; SIM="iPhone 16" pour choisir
 ```
-Ce script : crée `TellaConfig.xcconfig` depuis l'exemple (connecteurs Dropbox/Google Drive de Tella désactivés), `pod install`, build Debug pour simulateur, tests `TellaTests` (dont `SpectreIntegrationTests`), la suite SpectreCore + backend, puis vérifie qu'aucun jeton/secret Google n'est présent dans le binaire. Journaux : `test-results/mac/`.
+Ce script : crée `TellaConfig.xcconfig` depuis l'exemple (connecteurs Dropbox/Google Drive de Tella désactivés), `pod install`, build Debug pour simulateur, tests SPECTRE dans l'app (cible `SpectreAppTests`), la suite SpectreCore + backend, puis vérifie qu'aucun jeton/secret Google n'est présent dans le binaire. Journaux : `test-results/mac/`.
 
-Résultat attendu : `TellaTests : PASS` et `BINAIRE: aucun jeton/secret Google détecté`. **Envoyez-moi les journaux en cas d'échec** : les erreurs de compilation Swift sont probables à ce premier passage, car le code iOS n'a jamais été compilé.
+Résultat attendu : `SpectreAppTests : PASS` et `BINAIRE: aucun jeton/secret Google détecté`. **Envoyez-moi les journaux en cas d'échec** : les erreurs de compilation Swift sont probables à ce premier passage, car le code iOS n'a jamais été compilé.
 
 Après un `pod install` réussi, committez `Podfile.lock` pour figer les dépendances.
 
