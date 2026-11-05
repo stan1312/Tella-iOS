@@ -16,6 +16,11 @@ target 'Tella' do
     # Pods for testing
   end
 
+  # SPECTRE Capture app-hosted tests (see scripts/xcode_add_spectre_app_tests.rb)
+  target 'SpectreAppTests' do
+    inherit! :search_paths
+  end
+
   target 'TellaUITests' do
     # Pods for testing
   end

@@ -22,6 +22,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         UIApplication.shared.setupApperance()
         setupDropbox()
         configureGoogleSignIn()
+        // SPECTRE: best-effort background resumption of deposits (iOS decides when).
+        SpectreDepositService.registerBackgroundTask { SpectreDepositService.current }
         return true
     }
     
@@ -39,7 +41,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         }
 
     private func setupDropbox() {
-        guard let dropboxAppKey = ConfigurationManager.getValue(DropboxAuthConstants.dropboxAppKey) else  {
+        guard let dropboxAppKey = ConfigurationManager.getValue(DropboxAuthConstants.dropboxAppKey), !dropboxAppKey.isEmpty else  { // SPECTRE: empty key = connector disabled
             debugLog("Dropbox App Key not found")
             return
         }
@@ -47,7 +49,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
     
     func configureGoogleSignIn() {
-        guard let clientID = ConfigurationManager.getValue(GoogleAuthConstants.gDriveClientID) else  {
+        guard let clientID = ConfigurationManager.getValue(GoogleAuthConstants.gDriveClientID), !clientID.isEmpty else  { // SPECTRE: empty id = connector disabled
             debugLog("Google Drive Client ID not found")
             return
         }

@@ -457,6 +457,11 @@ class VaultManager : VaultManagerInterface, ObservableObject{
         }
     }
     
+    /// SPECTRE: lets the deletion coordinator prove the encrypted container is gone.
+    func vaultContainerExists(fileId: String) -> Bool {
+        fileManager.fileExists(filePath: containerURL(for: fileId).path)
+    }
+
     private func containerURL(for containerName: String) -> URL {
         return containerURL.appendingPathComponent(containerName)
     }

@@ -297,6 +297,11 @@ public class CameraService: NSObject, ObservableObject, AVCapturePhotoCaptureDel
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
         }
+
+        // SPECTRE (Phase 3, opt-in): 1080p/4K, 30/60 fps only if the device reports it.
+        if let device = (captureSession.inputs.compactMap { $0 as? AVCaptureDeviceInput }.first { $0.device.hasMediaType(.video) })?.device {
+            SpectreVideoSettings.applyIfSelected(to: device, connection: videoOutput.connection(with: .video))
+        }
         
         setupVideoFlashSceneMonitoring()
         
@@ -615,7 +620,11 @@ extension CameraService  {
             turnOffTorch()
         }
         
-        if error != nil {
+        // SPECTRE fix: AVFoundation can end a recording with an error (disk full, max
+        // duration, interruption) while the file is complete and playable. Tella used to
+        // discard it; keep it when AVErrorRecordingSuccessfullyFinishedKey is true.
+        let finishedSuccessfully = ((error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool) ?? false
+        if error != nil && !finishedSuccessfully {
             DispatchQueue.main.async {
                 self.shouldShowProgressView = false
                 self.isRecording = false

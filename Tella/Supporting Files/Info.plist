@@ -5,11 +5,12 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).spectre-upload</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Tella</string>
+	<string>SPECTRE Capture</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -24,6 +25,16 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>spectreEnroll</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>spectre</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -59,15 +70,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Tella requires access to the camera to to take photos and videos inside the app.</string>
+	<string>SPECTRE Capture utilise la caméra pour filmer dans l'application ; les vidéos ne sont pas enregistrées dans Photos.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We need access to your local network for peer-to-peer sharing.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Tella requires access to the location to capture photos with location information.</string>
+	<string>Facultatif : la position n'est ajoutée aux vidéos que si vous l'activez explicitement dans les réglages.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Tella requires access to your microphone to record audio inside the app.</string>
+	<string>SPECTRE Capture utilise le microphone pour enregistrer le son des vidéos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Tella requires access to your photo library to add or delete photos.</string>
+	<string>Utilisé uniquement si vous importez volontairement un fichier depuis Photos.</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<string>YES</string>
 	<key>UIAppFonts</key>

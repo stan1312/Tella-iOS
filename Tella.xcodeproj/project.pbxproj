@@ -365,7 +365,6 @@
 		1293547B294A454900735ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293547A294A454900735ED0 /* AppDelegate.swift */; };
 		12937FE22DC227B30019ECC4 /* AVPlayerItem+VideoRotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12937FE12DC227A90019ECC4 /* AVPlayerItem+VideoRotation.swift */; };
 		1293800D2DC284D50019ECC4 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 129380092DC284D50019ECC4 /* Localizable.strings */; };
-		1293800E2DC284D50019ECC4 /* TellaConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1293800B2DC284D50019ECC4 /* TellaConfig.xcconfig */; };
 		129380102DC284D50019ECC4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 12937FF52DC284D50019ECC4 /* LaunchScreen.storyboard */; };
 		1293F6662AD7E52800F6CFBD /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F6652AD7E52800F6CFBD /* FeedbackView.swift */; };
 		1293F6682AD7EF3900F6CFBD /* CloseHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1293F6672AD7EF3900F6CFBD /* CloseHeaderView.swift */; };
@@ -570,6 +569,7 @@
 		15FF77F62C8F862A002E87C3 /* DropboxDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF77F52C8F862A002E87C3 /* DropboxDatabase.swift */; };
 		15FF77F82C8F89A8002E87C3 /* DropboxData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF77F72C8F89A8002E87C3 /* DropboxData.swift */; };
 		15FF77FF2C90CF7A002E87C3 /* DropboxServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF77FE2C90CF7A002E87C3 /* DropboxServer.swift */; };
+		1B0BC0EAC3368E1E6055D261 /* SpectreHTTPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4ED205AD3609F7FD3880CE /* SpectreHTTPTransport.swift */; };
 		1E67B39223FC9067001F3D64 /* ImagePickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E67B39123FC9067001F3D64 /* ImagePickerSheet.swift */; };
 		1EAE6BF524146C2100114244 /* QuickLook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAE6BF424146C2100114244 /* QuickLook.swift */; };
 		200398FF2CE3F1B800DCFCF0 /* EditVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200398FE2CE3F1B800DCFCF0 /* EditVideoView.swift */; };
@@ -631,8 +631,23 @@
 		20E4DA872C380E3C00123843 /* ServerCreateFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20E4DA862C380E3C00123843 /* ServerCreateFolderView.swift */; };
 		20F3E6012CB5D9EC00B570E3 /* EditFileCancelBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F3E6002CB5D9EC00B570E3 /* EditFileCancelBottomSheet.swift */; };
 		20FA030D2CD282C3001121F1 /* TrimMediaSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FA030C2CD282C3001121F1 /* TrimMediaSliderView.swift */; };
+		2D5D3131060A3BDFB5E72BF0 /* SpectreStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BF4BF98809B080BDD9F0777 /* SpectreStorage.swift */; };
+		3A0686E2DFE7D190EFA3A6D3 /* TellaVaultCopyHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7FF7349E2E9C43B6688F19 /* TellaVaultCopyHandler.swift */; };
+		3C6EA68FBE390DAF1B2B5505 /* ResumableUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3931A6C2B20A8348222E19 /* ResumableUploader.swift */; };
+		406E9F9A94B7ED27A12A172F /* DepositEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3CC6451A5BF81E0BA160E2 /* DepositEngine.swift */; };
+		4AF8E12FA25FBFB8A2769A5D /* DepositBackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 737590F652100A9899B98DA1 /* DepositBackendClient.swift */; };
+		6672F091F4E300049A9CB869 /* SpectreStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD0D0F321B21CCC148A1847 /* SpectreStatusView.swift */; };
+		75B02DFA19E3D2F46D4E1ED0 /* SpectreIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F98F1796E6D088861E5E34 /* SpectreIntegrationTests.swift */; };
+		77E53A915B98F07E3A2B360D /* SpectreVideoCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD2E7CAE5690C569E62993E /* SpectreVideoCapabilities.swift */; };
+		7E23CF2856D753FB033818AF /* EncryptedOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EF0B11BECDDC72DB29E989D /* EncryptedOutbox.swift */; };
+		8CF77303A8774850C8D233A9 /* SpectreDepositService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A2FC8B4CE988A7F06126C2 /* SpectreDepositService.swift */; };
 		934B1C71DE9977A3BC472325 /* libPods-Tella-TellaUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C993ADB6B19E7EA5B83B95B5 /* libPods-Tella-TellaUITests.a */; };
+		97F847AFD23EA92B94277735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48039B2D39F1044496B60755 /* Foundation.framework */; };
+		9C1E46507CDC2E9C0499D676 /* Enrollment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 086B650BC724A792D7178151 /* Enrollment.swift */; };
+		B3E000F081E00AFEF002BDEA /* SpectreKeychainSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F2D04FE4E231EE1D147ABA /* SpectreKeychainSecretStore.swift */; };
 		BBA127E5791AFBEAC473625B /* libPods-Tella.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B535530A1B803891A53389 /* libPods-Tella.a */; };
+		C17981A7308FC3F84E1D8E9F /* CryptoSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108BC5A3861CCC289E29F98E /* CryptoSupport.swift */; };
+		C59B1BE8A7F6050B30797E07 /* DeletionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 749F89C7A66D64366EB77F4D /* DeletionCoordinator.swift */; };
 		CC0797BE2A8D46CB00AAE63F /* UnlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0797BD2A8D46CB00AAE63F /* UnlockView.swift */; };
 		CC0D56EF2AC4B59B00AA5D81 /* AddTemplateVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0D56EE2AC4B59B00AA5D81 /* AddTemplateVM.swift */; };
 		CC0F1DD42B47320F00720010 /* UwaziDatePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0F1DD32B47320F00720010 /* UwaziDatePicker.swift */; };
@@ -675,6 +690,8 @@
 		CCF8D5C22AE994BF000D27C5 /* SupportingFileWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF8D5C12AE994BF000D27C5 /* SupportingFileWidget.swift */; };
 		CCF8D5C42AE9AA08000D27C5 /* PrimaryDocuments.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF8D5C32AE9AA08000D27C5 /* PrimaryDocuments.swift */; };
 		CE02ED7F24E42B3900014176 /* UserDefaultsProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE02ED7E24E42B3900014176 /* UserDefaultsProperty.swift */; };
+		D0223CAD77F6679F88307848 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276D8D942CECAD5B0E8FBE8 /* Logging.swift */; };
+		D35F3C264B0484D43475D87F /* SpectreHomeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952B438FFD1E9407157B6A98 /* SpectreHomeCard.swift */; };
 		D5077A40260D300600D72947 /* DebugLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5077A3F260D300600D72947 /* DebugLogging.swift */; };
 		D50FA6842613ABCA00D6D63B /* VaultManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D50FA6822613ABCA00D6D63B /* VaultManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D50FA6872613ABCA00D6D63B /* VaultManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D50FA6802613ABC900D6D63B /* VaultManager.framework */; };
@@ -702,6 +719,7 @@
 		D7F55FCD25348FB80028739E /* AudioRecorderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F55FCC25348FB80028739E /* AudioRecorderManager.swift */; };
 		D7F55FDA253490BE0028739E /* RecordingAudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F55FD9253490BE0028739E /* RecordingAudioManager.swift */; };
 		DE678157A2299C9F4C7CA7FE /* libPods-TellaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC566A8F889B3BE5C0D33838 /* libPods-TellaTests.a */; };
+		DECB99250770DEFDDCECFCF7 /* ReceiptVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700868C702065AB4DFB0982B /* ReceiptVerifier.swift */; };
 		E108B75729FE79340045CCBE /* UwaziServerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E108B75629FE79340045CCBE /* UwaziServerViewModel.swift */; };
 		E11968B12A1F409D00BA7B56 /* UwaziLanguageDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11968B02A1F409D00BA7B56 /* UwaziLanguageDTO.swift */; };
 		E131BA3B2A1B45A30095BC91 /* UwaziServerRepositories.swift in Sources */ = {isa = PBXBuildFile; fileRef = E131BA3A2A1B45A30095BC91 /* UwaziServerRepositories.swift */; };
@@ -741,7 +759,10 @@
 		E1F4A8E22AAF3F62001C8E61 /* UwaziServerLanguageProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4A8E12AAF3F62001C8E61 /* UwaziServerLanguageProtocol.swift */; };
 		E1F4A8E42AAF3F80001C8E61 /* UwaziTemplateProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4A8E32AAF3F80001C8E61 /* UwaziTemplateProtocol.swift */; };
 		E1F6D7832AB17FB5000A9B64 /* UwaziValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F6D7822AB17FB5000A9B64 /* UwaziValue.swift */; };
+		EC02436082D59FB01C2C1449 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6904500D81E58A3599B1F66 /* Models.swift */; };
+		EF35BA6185F7626178D2FEF8 /* SpectreEnrollmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0138B21FD3EE86D8647E3D7C /* SpectreEnrollmentView.swift */; };
 		F0A1B2C32F5E111100AA1101 /* FormChangeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1B2C42F5E111100AA1101 /* FormChangeTracker.swift */; };
+		F169262CF0AF11CD834FB0DA /* Stores.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90A57B37362504F70F4C4F95 /* Stores.swift */; };
 		F66E65B323E32080000F93E5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F66E65B223E32080000F93E5 /* Assets.xcassets */; };
 		F66E65CF23E32080000F93E5 /* TellaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66E65CE23E32080000F93E5 /* TellaUITests.swift */; };
 /* End PBXBuildFile section */
@@ -768,6 +789,13 @@
 			remoteGlobalIDString = F66E65A823E3207D000F93E5;
 			remoteInfo = Tella;
 		};
+		FF7247ACBB1EEBE4B56EDC03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F66E65A123E3207D000F93E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F66E65A823E3207D000F93E5;
+			remoteInfo = Tella;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -785,6 +813,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0138B21FD3EE86D8647E3D7C /* SpectreEnrollmentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreEnrollmentView.swift; sourceTree = "<group>"; };
+		086B650BC724A792D7178151 /* Enrollment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Enrollment.swift; sourceTree = "<group>"; };
+		0BF4BF98809B080BDD9F0777 /* SpectreStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreStorage.swift; sourceTree = "<group>"; };
 		0D4BC3CB26765B8C00DCDC30 /* ModelStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStubs.swift; sourceTree = "<group>"; };
 		0D4BC3CD267668D600DCDC30 /* AddFileYellowButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFileYellowButton.swift; sourceTree = "<group>"; };
 		0D4D7517266470A700D7A635 /* SettingToggleItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingToggleItem.swift; sourceTree = "<group>"; };
@@ -808,6 +839,7 @@
 		0ECC7818267A53A700A2ACF2 /* PageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
 		0ECC781A267A542300A2ACF2 /* UwaziPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UwaziPages.swift; sourceTree = "<group>"; };
 		0F3DC3E42523951C0024B4A0 /* BundleInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleInfo.swift; sourceTree = "<group>"; };
+		108BC5A3861CCC289E29F98E /* CryptoSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CryptoSupport.swift; sourceTree = "<group>"; };
 		1202D9572BF4CFF200EAFAB3 /* SelectValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectValues.swift; sourceTree = "<group>"; };
 		1203CDDB298C5B9100D09073 /* ConnectionActionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionActionType.swift; sourceTree = "<group>"; };
 		1203CDDD298D7C1300D09073 /* FileToUpload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileToUpload.swift; sourceTree = "<group>"; };
@@ -1357,6 +1389,7 @@
 		15F64CA52B6D80F7008A57AA /* ResourceCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceCardViewModel.swift; sourceTree = "<group>"; };
 		15F64CA72B6D852D008A57AA /* ResourceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceCard.swift; sourceTree = "<group>"; };
 		15F924472C17929300C436C5 /* ViewModelState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelState.swift; sourceTree = "<group>"; };
+		15F98F1796E6D088861E5E34 /* SpectreIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreIntegrationTests.swift; sourceTree = "<group>"; };
 		15FABA352B73F96800B2EFEE /* ResourceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRepository.swift; sourceTree = "<group>"; };
 		15FABA372B7405B800B2EFEE /* ResourceDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceDTO.swift; sourceTree = "<group>"; };
 		15FE5D092CADD2860004AD35 /* DropboxUploadResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxUploadResponse.swift; sourceTree = "<group>"; };
@@ -1425,13 +1458,29 @@
 		20E4DA882C380F7400123843 /* CreateNextcloudFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNextcloudFolderView.swift; sourceTree = "<group>"; };
 		20F3E6002CB5D9EC00B570E3 /* EditFileCancelBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFileCancelBottomSheet.swift; sourceTree = "<group>"; };
 		20FA030C2CD282C3001121F1 /* TrimMediaSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrimMediaSliderView.swift; sourceTree = "<group>"; };
+		2EF0B11BECDDC72DB29E989D /* EncryptedOutbox.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EncryptedOutbox.swift; sourceTree = "<group>"; };
 		37DC6845E48CFF0D7CABBD38 /* Pods-Tella-TellaUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tella-TellaUITests.release.xcconfig"; path = "Target Support Files/Pods-Tella-TellaUITests/Pods-Tella-TellaUITests.release.xcconfig"; sourceTree = "<group>"; };
+		40F2D04FE4E231EE1D147ABA /* SpectreKeychainSecretStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreKeychainSecretStore.swift; sourceTree = "<group>"; };
 		44B535530A1B803891A53389 /* libPods-Tella.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Tella.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		48039B2D39F1044496B60755 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		4C4ED205AD3609F7FD3880CE /* SpectreHTTPTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreHTTPTransport.swift; sourceTree = "<group>"; };
 		50A0C923FDDA6F145D85AB08 /* Pods-Tella-TellaUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tella-TellaUITests.debug.xcconfig"; path = "Target Support Files/Pods-Tella-TellaUITests/Pods-Tella-TellaUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		6C7FF7349E2E9C43B6688F19 /* TellaVaultCopyHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TellaVaultCopyHandler.swift; sourceTree = "<group>"; };
 		6DD4C039240F547300491438 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		700868C702065AB4DFB0982B /* ReceiptVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptVerifier.swift; sourceTree = "<group>"; };
+		737590F652100A9899B98DA1 /* DepositBackendClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DepositBackendClient.swift; sourceTree = "<group>"; };
+		749F89C7A66D64366EB77F4D /* DeletionCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeletionCoordinator.swift; sourceTree = "<group>"; };
+		8B3CC6451A5BF81E0BA160E2 /* DepositEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DepositEngine.swift; sourceTree = "<group>"; };
+		90A57B37362504F70F4C4F95 /* Stores.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Stores.swift; sourceTree = "<group>"; };
+		952B438FFD1E9407157B6A98 /* SpectreHomeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreHomeCard.swift; sourceTree = "<group>"; };
+		9DD0D0F321B21CCC148A1847 /* SpectreStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreStatusView.swift; sourceTree = "<group>"; };
 		A4A78C49EBFE1263E0D26D08 /* Pods-TellaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TellaTests.release.xcconfig"; path = "Target Support Files/Pods-TellaTests/Pods-TellaTests.release.xcconfig"; sourceTree = "<group>"; };
+		A5A2FC8B4CE988A7F06126C2 /* SpectreDepositService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreDepositService.swift; sourceTree = "<group>"; };
+		AAD2E7CAE5690C569E62993E /* SpectreVideoCapabilities.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreVideoCapabilities.swift; sourceTree = "<group>"; };
 		AEE93975E74FB9B628DB9FD3 /* Pods-Tella.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tella.release.xcconfig"; path = "Target Support Files/Pods-Tella/Pods-Tella.release.xcconfig"; sourceTree = "<group>"; };
+		B276D8D942CECAD5B0E8FBE8 /* Logging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		C993ADB6B19E7EA5B83B95B5 /* libPods-Tella-TellaUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Tella-TellaUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA3931A6C2B20A8348222E19 /* ResumableUploader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResumableUploader.swift; sourceTree = "<group>"; };
 		CC0797BD2A8D46CB00AAE63F /* UnlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlockView.swift; sourceTree = "<group>"; };
 		CC0D56EE2AC4B59B00AA5D81 /* AddTemplateVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTemplateVM.swift; sourceTree = "<group>"; };
 		CC0F1DD32B47320F00720010 /* UwaziDatePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UwaziDatePicker.swift; sourceTree = "<group>"; };
@@ -1498,11 +1547,13 @@
 		D5DA7F972646220100B00FDA /* FileGroupButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileGroupButtonView.swift; sourceTree = "<group>"; };
 		D5DA7F9A2648D05400B00FDA /* FileListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListView.swift; sourceTree = "<group>"; };
 		D5DAFDCD265384C4002F3942 /* MainAppModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainAppModel.swift; sourceTree = "<group>"; };
+		D6904500D81E58A3599B1F66 /* Models.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		D75F9E9B25342539006F6212 /* RecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordViewModel.swift; sourceTree = "<group>"; };
 		D7CFC37E254260D300CCB352 /* RecordView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
 		D7F55FC725348FA50028739E /* RecordState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordState.swift; sourceTree = "<group>"; };
 		D7F55FCC25348FB80028739E /* AudioRecorderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderManager.swift; sourceTree = "<group>"; };
 		D7F55FD9253490BE0028739E /* RecordingAudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingAudioManager.swift; sourceTree = "<group>"; };
+		D93537EE1DC4156E211D9ED1 /* SpectreAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpectreAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E108B75629FE79340045CCBE /* UwaziServerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UwaziServerViewModel.swift; sourceTree = "<group>"; };
 		E11968B02A1F409D00BA7B56 /* UwaziLanguageDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UwaziLanguageDTO.swift; sourceTree = "<group>"; };
 		E131BA3A2A1B45A30095BC91 /* UwaziServerRepositories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UwaziServerRepositories.swift; sourceTree = "<group>"; };
@@ -1557,6 +1608,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		C216A26867DB519675F3C4F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97F847AFD23EA92B94277735 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D50FA67D2613ABC900D6D63B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -3595,6 +3654,7 @@
 				44B535530A1B803891A53389 /* libPods-Tella.a */,
 				C993ADB6B19E7EA5B83B95B5 /* libPods-Tella-TellaUITests.a */,
 				EC566A8F889B3BE5C0D33838 /* libPods-TellaTests.a */,
+				739F460CE705CFAF04D0E512 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -3610,6 +3670,34 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		5187A9436D667C5264B6B6AD /* SpectreCore */ = {
+			isa = PBXGroup;
+			children = (
+				108BC5A3861CCC289E29F98E /* CryptoSupport.swift */,
+				749F89C7A66D64366EB77F4D /* DeletionCoordinator.swift */,
+				737590F652100A9899B98DA1 /* DepositBackendClient.swift */,
+				8B3CC6451A5BF81E0BA160E2 /* DepositEngine.swift */,
+				2EF0B11BECDDC72DB29E989D /* EncryptedOutbox.swift */,
+				086B650BC724A792D7178151 /* Enrollment.swift */,
+				B276D8D942CECAD5B0E8FBE8 /* Logging.swift */,
+				D6904500D81E58A3599B1F66 /* Models.swift */,
+				700868C702065AB4DFB0982B /* ReceiptVerifier.swift */,
+				CA3931A6C2B20A8348222E19 /* ResumableUploader.swift */,
+				90A57B37362504F70F4C4F95 /* Stores.swift */,
+				4C4ED205AD3609F7FD3880CE /* SpectreHTTPTransport.swift */,
+			);
+			name = SpectreCore;
+			path = SpectreCore/Sources/SpectreCore;
+			sourceTree = "<group>";
+		};
+		739F460CE705CFAF04D0E512 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				48039B2D39F1044496B60755 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		957DBB46FF2BBCC04C44542A /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -3621,6 +3709,22 @@
 				A4A78C49EBFE1263E0D26D08 /* Pods-TellaTests.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C93549575A9F19A6F5E18783 /* Spectre */ = {
+			isa = PBXGroup;
+			children = (
+				A5A2FC8B4CE988A7F06126C2 /* SpectreDepositService.swift */,
+				0138B21FD3EE86D8647E3D7C /* SpectreEnrollmentView.swift */,
+				952B438FFD1E9407157B6A98 /* SpectreHomeCard.swift */,
+				40F2D04FE4E231EE1D147ABA /* SpectreKeychainSecretStore.swift */,
+				9DD0D0F321B21CCC148A1847 /* SpectreStatusView.swift */,
+				0BF4BF98809B080BDD9F0777 /* SpectreStorage.swift */,
+				AAD2E7CAE5690C569E62993E /* SpectreVideoCapabilities.swift */,
+				6C7FF7349E2E9C43B6688F19 /* TellaVaultCopyHandler.swift */,
+			);
+			name = Spectre;
+			path = Spectre;
 			sourceTree = "<group>";
 		};
 		CC284CCC2AC76B0300DFD7D6 /* Entity */ = {
@@ -3990,6 +4094,15 @@
 			path = Protocol;
 			sourceTree = "<group>";
 		};
+		F4538B77102F9C28CD459291 /* SpectreAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				15F98F1796E6D088861E5E34 /* SpectreIntegrationTests.swift */,
+			);
+			name = SpectreAppTests;
+			path = SpectreAppTests;
+			sourceTree = "<group>";
+		};
 		F66E65A023E3207D000F93E5 = {
 			isa = PBXGroup;
 			children = (
@@ -4002,6 +4115,8 @@
 				957DBB46FF2BBCC04C44542A /* Pods */,
 				1291F4F427B541DD006A34D3 /* Recovered References */,
 				2E716D4C983AB2E95696A989 /* Frameworks */,
+				5187A9436D667C5264B6B6AD /* SpectreCore */,
+				F4538B77102F9C28CD459291 /* SpectreAppTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -4012,6 +4127,7 @@
 				F66E65BF23E32080000F93E5 /* TellaTests.xctest */,
 				F66E65CA23E32080000F93E5 /* TellaUITests.xctest */,
 				D50FA6802613ABC900D6D63B /* VaultManager.framework */,
+				D93537EE1DC4156E211D9ED1 /* SpectreAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -4027,6 +4143,7 @@
 				1231A45A294C76530057DA85 /* Data */,
 				12781F4A27EA2C9800FE9609 /* Utils */,
 				4CE85B832408B1AF00CF24AF /* Resources */,
+				C93549575A9F19A6F5E18783 /* Spectre */,
 			);
 			path = Tella;
 			sourceTree = "<group>";
@@ -4067,6 +4184,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		3FC33BCDA7D0BFD2A932941C /* SpectreAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CCD57F1C0A066916B02DAF92 /* Build configuration list for PBXNativeTarget "SpectreAppTests" */;
+			buildPhases = (
+				2EDFEA1D5DA4906B8993DA76 /* Sources */,
+				C216A26867DB519675F3C4F8 /* Frameworks */,
+				6B6EE0ED1D40E44239795EEA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				091CF26001054D599677F677 /* PBXTargetDependency */,
+			);
+			name = SpectreAppTests;
+			productName = SpectreAppTests;
+			productReference = D93537EE1DC4156E211D9ED1 /* SpectreAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D50FA67F2613ABC900D6D63B /* VaultManager */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D50FA6892613ABCA00D6D63B /* Build configuration list for PBXNativeTarget "VaultManager" */;
@@ -4220,11 +4355,19 @@
 				F66E65BE23E32080000F93E5 /* TellaTests */,
 				F66E65C923E32080000F93E5 /* TellaUITests */,
 				D50FA67F2613ABC900D6D63B /* VaultManager */,
+				3FC33BCDA7D0BFD2A932941C /* SpectreAppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6B6EE0ED1D40E44239795EEA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D50FA67E2613ABC900D6D63B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4242,7 +4385,6 @@
 				12567FF32716E33500A2D356 /* OpenSans-Regular.ttf in Resources */,
 				D51639762631091E003A11B5 /* NewAssets.xcassets in Resources */,
 				1293800D2DC284D50019ECC4 /* Localizable.strings in Resources */,
-				1293800E2DC284D50019ECC4 /* TellaConfig.xcconfig in Resources */,
 				129380102DC284D50019ECC4 /* LaunchScreen.storyboard in Resources */,
 				128777C52718D25E000624E2 /* OpenSans-Light.ttf in Resources */,
 				F66E65B323E32080000F93E5 /* Assets.xcassets in Resources */,
@@ -4380,6 +4522,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2EDFEA1D5DA4906B8993DA76 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75B02DFA19E3D2F46D4E1ED0 /* SpectreIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D50FA67C2613ABC900D6D63B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -5099,6 +5249,26 @@
 				123125422930241500D3BCD5 /* PhotoVideoViewModel.swift in Sources */,
 				0D4D7518266470A700D7A635 /* SettingToggleItem.swift in Sources */,
 				128B15C927DA085A00E1C1E0 /* WelcomeView.swift in Sources */,
+				8CF77303A8774850C8D233A9 /* SpectreDepositService.swift in Sources */,
+				EF35BA6185F7626178D2FEF8 /* SpectreEnrollmentView.swift in Sources */,
+				D35F3C264B0484D43475D87F /* SpectreHomeCard.swift in Sources */,
+				B3E000F081E00AFEF002BDEA /* SpectreKeychainSecretStore.swift in Sources */,
+				6672F091F4E300049A9CB869 /* SpectreStatusView.swift in Sources */,
+				2D5D3131060A3BDFB5E72BF0 /* SpectreStorage.swift in Sources */,
+				77E53A915B98F07E3A2B360D /* SpectreVideoCapabilities.swift in Sources */,
+				3A0686E2DFE7D190EFA3A6D3 /* TellaVaultCopyHandler.swift in Sources */,
+				C17981A7308FC3F84E1D8E9F /* CryptoSupport.swift in Sources */,
+				C59B1BE8A7F6050B30797E07 /* DeletionCoordinator.swift in Sources */,
+				4AF8E12FA25FBFB8A2769A5D /* DepositBackendClient.swift in Sources */,
+				406E9F9A94B7ED27A12A172F /* DepositEngine.swift in Sources */,
+				7E23CF2856D753FB033818AF /* EncryptedOutbox.swift in Sources */,
+				9C1E46507CDC2E9C0499D676 /* Enrollment.swift in Sources */,
+				D0223CAD77F6679F88307848 /* Logging.swift in Sources */,
+				EC02436082D59FB01C2C1449 /* Models.swift in Sources */,
+				DECB99250770DEFDDCECFCF7 /* ReceiptVerifier.swift in Sources */,
+				3C6EA68FBE390DAF1B2B5505 /* ResumableUploader.swift in Sources */,
+				F169262CF0AF11CD834FB0DA /* Stores.swift in Sources */,
+				1B0BC0EAC3368E1E6055D261 /* SpectreHTTPTransport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5126,6 +5296,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		091CF26001054D599677F677 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Tella;
+			target = F66E65A823E3207D000F93E5 /* Tella */;
+			targetProxy = FF7247ACBB1EEBE4B56EDC03 /* PBXContainerItemProxy */;
+		};
 		D50FA6862613ABCA00D6D63B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D50FA67F2613ABC900D6D63B /* VaultManager */;
@@ -5184,6 +5360,41 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		A007612DD83E95C419FCD8BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.spectre.capture.apptests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tella.app/Tella";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A51D631F0CB60A6430505A42 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.spectre.capture.apptests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tella.app/Tella";
+			};
+			name = Debug;
+		};
 		D50FA68A2613ABCA00D6D63B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5518,6 +5729,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CCD57F1C0A066916B02DAF92 /* Build configuration list for PBXNativeTarget "SpectreAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A007612DD83E95C419FCD8BE /* Release */,
+				A51D631F0CB60A6430505A42 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D50FA6892613ABCA00D6D63B /* Build configuration list for PBXNativeTarget "VaultManager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

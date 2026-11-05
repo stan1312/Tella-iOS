@@ -1,0 +1,12 @@
+{
+  "name": "spectre-capture-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SPECTRE Capture deposit-only backend (Apps Script) + local mock stack and tests",
+  "scripts": {
+    "test": "node --test --test-reporter=spec apps-script/test/*.test.mjs",
+    "mock": "node mock-stack/server.mjs --port=8787"
+  },
+  "license": "MIT"
+}

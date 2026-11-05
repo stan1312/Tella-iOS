@@ -1,0 +1,7 @@
+// SPECTRE Capture — build configuration (copy to TellaConfig.xcconfig; that file is git-ignored).
+// SPECTRE does not use Tella's Dropbox / personal Google Drive connectors: keep them empty.
+// Never put the OWNER's Google credentials here — the app must not contain any.
+DROPBOX_APP_KEY =
+GOOGLE_CLIENT_ID =
+// Must be a syntactically valid URL scheme even when Google Sign-In is unused.
+GOOGLE_REVERSE_CLIENT_ID = spectre-gdrive-disabled
