@@ -26,7 +26,7 @@ function spectreSetup() {
       headers: { Authorization: 'Bearer ' + env.token() },
       payload: JSON.stringify({ name: 'SPECTRE_DEPOT_TEST', mimeType: 'application/vnd.google-apps.folder' })
     });
-    if (res.status !== 200) throw new Error('Folder creation failed: HTTP ' + res.status);
+    if (res.status !== 200) throw new Error('Folder creation failed: HTTP ' + res.status + ' ' + spApiErrorReason_(res.text));
     env.store.set('CFG_FOLDER_ID', JSON.parse(res.text).id);
   }
   var hasTrigger = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'spectreDailyPurge'; });
@@ -76,3 +76,12 @@ function spectreDailyPurge() {
   console.log('Purged upload records: ' + spAdminPurge_(spGasEnv_()));
 }
 
+
+/** Google API error reason only (e.g. "accessNotConfigured: Drive API disabled"), never tokens or URLs. */
+function spApiErrorReason_(text) {
+  try {
+    var err = JSON.parse(text).error || {};
+    var reason = (err.errors && err.errors[0] && err.errors[0].reason) || err.status || '';
+    return String(reason + ': ' + (err.message || '')).slice(0, 200);
+  } catch (e) { return ''; }
+}
