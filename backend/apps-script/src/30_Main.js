@@ -21,13 +21,9 @@ function doGet() {
 function spectreSetup() {
   var env = spGasEnv_();
   if (!env.store.get('CFG_FOLDER_ID')) {
-    var res = env.http.fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
-      method: 'post', contentType: 'application/json; charset=UTF-8',
-      headers: { Authorization: 'Bearer ' + env.token() },
-      payload: JSON.stringify({ name: 'SPECTRE_DEPOT_TEST', mimeType: 'application/vnd.google-apps.folder' })
-    });
-    if (res.status !== 200) throw new Error('Folder creation failed: HTTP ' + res.status + ' ' + spApiErrorReason_(res.text));
-    env.store.set('CFG_FOLDER_ID', JSON.parse(res.text).id);
+    var id = spCreateDriveFolder_(env, 'SPECTRE_DEPOT_TEST', null);
+    env.store.set('CFG_FOLDER_ID', id);
+    env.store.set('CFG_ROOT_FOLDER_ID', id);
   }
   var hasTrigger = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'spectreDailyPurge'; });
   if (!hasTrigger) ScriptApp.newTrigger('spectreDailyPurge').timeBased().everyDays(1).atHour(3).create();

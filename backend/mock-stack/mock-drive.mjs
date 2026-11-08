@@ -86,7 +86,18 @@ export class MockDrive {
       if (!this.authorized(headers)) return this.err(401, 'authError');
       const meta = JSON.parse(body || '{}');
       const id = 'fld_' + crypto.randomBytes(8).toString('hex');
-      this.files.set(id, { id, name: meta.name, mimeType: meta.mimeType, parents: [], appProperties: {} });
+      this.files.set(id, { id, name: meta.name, mimeType: meta.mimeType, parents: meta.parents || [], appProperties: {} });
+      return this.json(200, { id });
+    }
+
+    // Small multipart upload (owner-side invitation file only)
+    if (method === 'POST' && u.pathname === '/upload/drive/v3/files' && u.searchParams.get('uploadType') === 'multipart') {
+      if (!this.authorized(headers)) return this.err(401, 'authError');
+      const parts = String(body).split(/\r\n--[^\r\n]+/);
+      const meta = JSON.parse(parts[0].slice(parts[0].indexOf('\r\n\r\n') + 4));
+      const content = parts[1].slice(parts[1].indexOf('\r\n\r\n') + 4);
+      const id = 'txt_' + crypto.randomBytes(8).toString('hex');
+      this.files.set(id, { id, name: meta.name, mimeType: meta.mimeType, parents: meta.parents || [], appProperties: {}, content });
       return this.json(200, { id });
     }
 

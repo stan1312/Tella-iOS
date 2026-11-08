@@ -49,10 +49,16 @@ clasp push
 > Compte personnel (Gmail, avec ou sans abonnement Google One) : aucune restriction. Seul un compte Google Workspace géré par une organisation peut interdire l'accès « Tout le monde » ; repli dans ce cas : Cloud Run (`docs/01_ARCHITECTURE.md`, ADR-006).
 
 ## 5. Inviter un membre de l'équipe
-1. Modifiez le libellé dans `spectreCreateInvite` (`'membre-01'`, pseudonyme, jamais un vrai nom), puis *Exécuter*.
-2. Le journal affiche un lien `spectre://enroll?v=1&endpoint=…&code=…` : **usage unique, expire en 48 h**.
-3. Sur votre Mac, hors ligne : `./scripts/invite_qr.sh 'LE_LIEN'` affiche un QR dans le terminal. Montrez-le **en personne** ; le membre le scanne depuis SPECTRE Capture (carte « Dépôt SPECTRE » de l'accueil → *Configurer cet appareil (invitation)*). Ne l'envoyez pas par messagerie.
+1. Dans l'éditeur, choisissez `spectreNouvelleInvitation`, puis *Exécuter*. Aucun code à modifier : le libellé est un pseudonyme numéroté (`membre-02`, `membre-03`…), jamais un vrai nom.
+2. Le lien d'invitation (**usage unique, expire en 48 h**) n'est **pas** affiché dans le journal : il est écrit dans `SPECTRE_INVITATION_A_SUPPRIMER.txt`, dans le dossier de dépôt principal.
+3. Sur votre Mac (Google Drive pour ordinateur) : `./scripts/invite_qr.sh --drive` transforme ce fichier en QR sur le Bureau et retire le fichier du Drive, sans jamais afficher le lien. Montrez le QR **en personne** ; le membre le scanne depuis SPECTRE Capture (carte « Dépôt SPECTRE » de l'accueil → *Configurer cet appareil (invitation)*). Ne l'envoyez pas par messagerie.
 4. `spectreListDevices` liste les appareils (id `d_…`, libellé, date d'inscription, statut).
+
+## 5 bis. Un dossier par manifestation
+- Avant la manifestation : `spectreNouvelleManif` → *Exécuter*. Crée `MANIF_AAAA-MM-JJ` dans le dossier de dépôt ; **tous les dépôts suivants y arrivent**. Renommez-le librement dans Drive (par ex. `2026-11-15_Manif_X`) : le lien est conservé.
+- Les envois déjà commencés se terminent dans l'ancien dossier, sans perte.
+- `spectreDossierPrincipal` → les dépôts reviennent dans le dossier principal.
+- Les téléphones n'ont rien à faire : ils ne voient jamais le Drive.
 
 ## 6. Révoquer (téléphone perdu, départ d'un membre)
 - Un appareil : dans `spectreRevokeDevice`, remplacez `'d_0000000000000000'` par l'id, *Exécuter*. Effet immédiat : ses prochaines requêtes reçoivent `DEVICE_REVOKED`. Les autres appareils continuent.

@@ -307,6 +307,50 @@ describe('session lifecycle', () => {
   });
 });
 
+describe('owner admin: colleagues and one folder per demonstration', () => {
+  const FOLDER = 'application/vnd.google-apps.folder';
+  test('spectreNouvelleManif routes new deposits to a dated sub-folder; uploads in flight finish where they started', async () => {
+    const c = await H.enroll(s);
+    const root = s.gas.props.get('CFG_FOLDER_ID');
+    const buf = H.fixture(1500, 7);
+    const p0 = H.initPayload(buf);
+    const pending = await H.call(s, c, 'initUpload', p0);
+    assert.equal(pending.ok, true);
+    const name = s.gas.ctx.spectreNouvelleManif();
+    assert.match(name, /^MANIF_\d{4}-\d{2}-\d{2}$/);
+    const sub = [...s.drive.files.values()].find((f) => f.mimeType === FOLDER && f.name === name);
+    assert.ok(sub, 'sub-folder created');
+    assert.deepEqual(sub.parents, [root]);
+    assert.equal(s.gas.props.get('CFG_FOLDER_ID'), sub.id);
+    const { fin } = await fullDeposit(c, H.fixture(1000, 8));
+    assert.equal(fin.ok, true);
+    assert.deepEqual(s.drive.files.get(fin.data.receipt.driveFileId).parents, [sub.id]);
+    const up = await H.uploadBytes(pending.data.sessionUrl, buf);
+    assert.deepEqual(s.drive.files.get(up.file.id).parents, [root], 'in-flight upload keeps its original folder');
+    const fin2 = await H.call(s, c, 'finalizeUpload', { uploadId: pending.data.uploadId, captureId: p0.captureId, driveFileId: up.file.id });
+    assert.equal(fin2.ok, true, JSON.stringify(fin2));
+    s.gas.ctx.spectreDossierPrincipal();
+    assert.equal(s.gas.props.get('CFG_FOLDER_ID'), root);
+  });
+  test('spectreNouvelleInvitation numbers pseudonyms and writes the link only to a file in the main folder', async () => {
+    const root = s.gas.props.get('CFG_FOLDER_ID');
+    s.gas.ctx.spectreNouvelleManif();
+    assert.equal(s.gas.ctx.spectreNouvelleInvitation(), 'membre-02');
+    assert.equal(s.gas.ctx.spectreNouvelleInvitation(), 'membre-03');
+    const files = [...s.drive.files.values()].filter((f) => f.name === 'SPECTRE_INVITATION_A_SUPPRIMER.txt');
+    assert.equal(files.length, 2);
+    for (const f of files) {
+      assert.deepEqual(f.parents, [root]);
+      assert.match(f.content, /^spectre:\/\/enroll\?v=1&endpoint=.+&code=[0-9a-f-]+\n$/);
+    }
+    assert.ok(!/spectre:\/\/|code=/.test(s.gas.logs.join('\n')), 'link never logged');
+    const code = new URL(files[0].content.trim()).searchParams.get('code');
+    const a = await H.post(s, { action: 'enroll', payload: JSON.stringify({ inviteCode: code }) });
+    assert.equal(a.ok, true);
+    assert.ok(s.gas.ctx.spAdminListDevices_(s.gas.env()).some((d) => d.label === 'membre-02'));
+  });
+});
+
 describe('static checks of the Apps Script source', () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const src = fs.readdirSync(path.join(here, '../src')).filter((f) => f.endsWith('.js'))
