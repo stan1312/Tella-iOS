@@ -329,6 +329,7 @@ describe('owner admin: colleagues and one folder per demonstration', () => {
     assert.deepEqual(s.drive.files.get(up.file.id).parents, [root], 'in-flight upload keeps its original folder');
     const fin2 = await H.call(s, c, 'finalizeUpload', { uploadId: pending.data.uploadId, captureId: p0.captureId, driveFileId: up.file.id });
     assert.equal(fin2.ok, true, JSON.stringify(fin2));
+    assert.equal(fin2.data.state, 'VERIFIED', JSON.stringify(fin2));
     s.gas.ctx.spectreDossierPrincipal();
     assert.equal(s.gas.props.get('CFG_FOLDER_ID'), root);
   });

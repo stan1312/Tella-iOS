@@ -217,7 +217,8 @@ function spInitUpload_(env, device, p) {
       id: uploadId, deviceId: device.id, captureId: p.captureId, size: p.size, sha256: p.sha256,
       md5: p.md5, mime: p.mimeType, ext: ext, state: 'INITIATED', createdAt: now,
       name: 'SPECTRE_' + spFileStamp_(now) + '_' + device.id.slice(2, 8) + '_' + p.captureId.slice(0, 8) + '.' + ext,
-      pendingCount: 0, renewals: 0
+      pendingCount: 0, renewals: 0,
+      folderId: cfg.folderId // fixed at init: a later spectreNouvelleManif does not move uploads in flight
     };
     nu.sessionUrl = spCreateSession_(env, cfg, nu);
     nu.sessionCreatedAt = now;
@@ -247,7 +248,7 @@ function spCreateSession_(env, cfg, u) {
   var url = cfg.base + '/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true&fields=' +
     encodeURIComponent('id,size,md5Checksum,sha256Checksum');
   var meta = {
-    name: u.name, parents: [cfg.folderId], mimeType: u.mime,
+    name: u.name, parents: [u.folderId || cfg.folderId], mimeType: u.mime,
     appProperties: { spectreUploadId: u.id, spectreCaptureId: u.captureId, spectreDeviceId: u.deviceId }
   };
   var res = env.http.fetch(url, {
@@ -321,7 +322,7 @@ function spFinalize_(env, device, p) {
   if (!f) return { state: 'INCOMPLETE' };
 
   var problems = [];
-  if ((f.parents || []).indexOf(cfg.folderId) < 0) problems.push('folder');
+  if ((f.parents || []).indexOf(u.folderId || cfg.folderId) < 0) problems.push('folder');
   if (String(f.size) !== String(u.size)) problems.push('size');
   if (!f.md5Checksum || String(f.md5Checksum).toLowerCase() !== u.md5) problems.push('md5');
   var source = 'sha256';
