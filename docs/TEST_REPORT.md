@@ -63,12 +63,23 @@ Journaux bruts : `test-results/backend.log`, `test-results/spectrecore.log`, `te
 
 Corrections apportées pendant cette passe : Xcode 15.4 → 16 (Tella 3.3 utilise `@retroactive`) ; tests SPECTRE de l'app déplacés dans la cible `SpectreAppTests`, car la cible d'origine `TellaTests` (VaultManagerTests, ModelStubs, MockCryptoManager) ne compile plus contre Tella 3.3, indépendamment de SPECTRE ; hôte de test signé ad hoc (`-`) pour le Keychain du simulateur (erreur -34018 sinon) ; T12 tolère le format de date de ffmpeg 9.
 
+## Essais réels chez le propriétaire — 2026-11-08 (Mac, Google personnel, iPhone)
+| Élément | Résultat observé |
+|---|---|
+| Mac du propriétaire, Xcode 27.2 | `BUILD SUCCEEDED` ; SpectreAppTests 5/5 ; backend 30/30 ; SpectreCore 28/28 ; secret scan propre ; contrôle du binaire OK |
+| Apps Script réel (compte Google personnel) | `clasp push` + `clasp deploy` ; `spectreInstall` : dossier SPECTRE_DEPOT_TEST créé, purge quotidienne programmée, invitation créée (« SPECTRE install OK ») après correction du 403 (incident 7) ; clasp déconnecté ensuite |
+| Signature iPhone | Équipe personnelle gratuite : app installée et lancée via `devicectl` (incident 8). Expiration du profil : 7 jours |
+| Inscription par QR (caméra réelle) | OK, appareil `membre-01` ; invitation à usage unique consommée ; image du QR supprimée |
+| Dépôt de bout en bout (vidéo factice de 5 s, sans personne) | Fichier `SPECTRE_20261108T173316Z_….mov` (3 347 848 octets) présent dans SPECTRE_DEPOT_TEST, constaté par les métadonnées de la synchronisation Google Drive du Mac (fichier non ouvert). L'app a indiqué le transfert confirmé (constat du propriétaire) |
+
+Reste à vérifier sur appareil : coupure réseau pendant un envoi, envoi en arrière-plan, 4K, révocation (`spectreRevokeDevice`) vue par l'app, suppression de la copie locale après reçu, `spectreListDevices` (un seul appareil attendu).
+
 ## Non exécuté (SKIP — impossible ici)
 | Élément | Raison | Où le faire |
 |---|---|---|
-| Tests UI, build signé pour appareil | Compte Apple requis | `docs/TEST_IPHONE.md` |
-| Google Drive / Apps Script réels (liaison IP des sessions, PUT sans jeton, latence `sha256Checksum`, quotas Apps Script) | Aucun compte Google ; interdiction de déploiement réel | `docs/SETUP_GOOGLE_DRIVE.md` §8 |
-| Arrière-plan iOS réel, Keychain sur appareil, capture 4K matérielle, QR caméra, `onOpenURL` vs vues Dropbox/serveurs Tella | Pas d'iPhone | `docs/TEST_IPHONE.md` |
+| Tests UI | Non automatisés | `docs/TEST_IPHONE.md` |
+| Google Drive réel : liaison IP des sessions, latence `sha256Checksum`, quotas Apps Script (le dépôt simple est validé, voir ci-dessus) | Non mesuré | `docs/SETUP_GOOGLE_DRIVE.md` §8 |
+| Arrière-plan iOS réel, capture 4K matérielle, `onOpenURL` vs vues Dropbox/serveurs Tella | Pas encore fait sur l'iPhone | `docs/TEST_IPHONE.md` |
 | gitleaks | Non installé dans le conteneur | `brew install gitleaks` puis `scripts/secret_scan.sh` |
 
 ## Incidents rencontrés et corrigés
@@ -78,3 +89,5 @@ Corrections apportées pendant cette passe : Xcode 15.4 → 16 (Tella 3.3 utilis
 4. Collision de noms `HTTPRequest`/`HTTPResponse` avec Tella ; renommés `SpectreHTTP*`.
 5. `TellaConfig.xcconfig` absent (gitignoré) mais référencé et embarqué dans le bundle ; ajout d'un fichier exemple, retrait du bundle.
 6. `scripts/configure_signing.sh` ne remplaçait pas l'équipe conditionnelle `DEVELOPMENT_TEAM[sdk=iphoneos*]` ; corrigé (perl), vérifié sur une copie du projet (9 occurrences remplacées, 0 équipe Horizontal restante), puis restauré.
+7. Apps Script réel : création du dossier refusée (HTTP 403) car l'API Drive n'est pas activée dans le projet Cloud par défaut d'un script neuf. Corrigé en déclarant le service avancé Drive v3 dans le manifeste (portée toujours `drive.file` seule) ; l'erreur affiche désormais la raison Google.
+8. Équipe Apple personnelle gratuite : refuse les capacités « Access Wi-Fi Information » (retirée du dépôt, aucun code ne lit le SSID) et « Data Protection » par défaut (retirée seulement dans la build locale du propriétaire ; le dépôt la conserve pour le compte payant). Avec cette build, n'utiliser que des vidéos factices.
