@@ -42,8 +42,6 @@ struct CameraControlsView: View {
             
             Spacer()
             
-            zoomFactorLabel
-            
             switch state {
                 
             case .readyTakingImage:
@@ -68,9 +66,9 @@ struct CameraControlsView: View {
         CustomText(formattedZoomFactor, style: .subheading1Style)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.black.opacity(0.5))
+            .background(Color.white.opacity(0.15))
             .clipShape(Capsule())
-            .padding(.bottom, 20)
+            .padding(.bottom, 12)
             .rotate(deviceOrientation: deviceOrientation,
                     shouldAnimate: shouldAnimate)
         
@@ -89,6 +87,19 @@ struct CameraControlsView: View {
             Spacer()
             gridButton
             flashButton
+        }
+        .overlay(alignment: .center) {
+            // Like the iPhone: elapsed time in a red pill at the top while recording.
+            if state == .recordingVideo {
+                Text(cameraViewModel.formattedCurrentTime)
+                    .font(.system(size: 17, weight: .regular).monospacedDigit())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.red)
+                    .cornerRadius(5)
+                    .padding(.top, 8)
+            }
         }
         .padding(.top, .smallMedium)
         .frame(height: 90)
@@ -182,15 +193,12 @@ struct CameraControlsView: View {
 
     private var nativeControls: some View {
         VStack(spacing: 0) {
-            if isRecording {
-                Text(cameraViewModel.formattedCurrentTime)
-                    .font(.system(size: 15, weight: .medium, design: .monospaced))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.red)
-                    .cornerRadius(4)
-                    .padding(.bottom, 12)
+            // iPhone order: zoom, modes, then thumbnail · shutter · flip.
+            zoomFactorLabel
+                .padding(.bottom, -8)
+            if !isRecording {
+                bottomMenu
+                    .padding(.bottom, 4)
             }
             HStack {
                 Group {
@@ -206,15 +214,10 @@ struct CameraControlsView: View {
                 .frame(width: 52, height: 52)
             }
             .padding(.horizontal, 32)
-            .padding(.top, 14)
-            if !isRecording {
-                bottomMenu
-                    .padding(.top, 14)
-            } else {
-                Spacer().frame(height: 44)
-            }
+            .padding(.top, 8)
         }
-        .padding(.bottom, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 28)
         .frame(maxWidth: .infinity)
         .background(Color.black)
         .contentShape(Rectangle())

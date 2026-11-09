@@ -53,8 +53,11 @@ struct MainView: View  {
                 }
                 
                 if mainAppModel.selectedTab == .camera {
-                    // SPECTRE: the iPhone's own camera screen (owner's request).
-                    SpectreSystemCameraScreen(mainAppModel: mainAppModel)
+                    // SPECTRE: iPhone-style camera that deposits as soon as recording stops
+                    // (the system camera screen forces a "Use video" step; see SpectreSystemCamera).
+                    CameraView(sourceView: .tab,
+                               showingCameraView: .constant(true),
+                               mainAppModel: mainAppModel)
                 }
             }
         }.accentColor(.white)
