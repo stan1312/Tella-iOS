@@ -65,7 +65,7 @@ final class CameraModel: ObservableObject {
         .store(in: &self.subscriptions)
     }
     
-    var cameraType : CameraType = .image {
+    var cameraType : CameraType = .video {   // SPECTRE: video first
         didSet {
             service.cameraType = cameraType
         }

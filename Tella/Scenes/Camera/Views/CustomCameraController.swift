@@ -46,7 +46,7 @@ public class CameraService: NSObject, ObservableObject, AVCapturePhotoCaptureDel
     @Published private(set) var flashMode: CameraFlashMode = .off
     @Published private(set) var isFlashAvailable = false
     
-    var cameraType : CameraType = .image {
+    var cameraType : CameraType = .video {   // SPECTRE: video first
         didSet {
             stopRunningCaptureSession()
             releasePreview()
