@@ -74,6 +74,17 @@ Corrections apportées pendant cette passe : Xcode 15.4 → 16 (Tella 3.3 utilis
 
 Reste à vérifier sur appareil : coupure réseau pendant un envoi, envoi en arrière-plan, 4K, révocation (`spectreRevokeDevice`) vue par l'app, suppression de la copie locale après reçu, `spectreListDevices` (un seul appareil attendu).
 
+## Mise à jour du 2026-11-09 (Mac du propriétaire, équipe Apple payante)
+| Élément | Résultat observé |
+|---|---|
+| Backend (`node --test`) | 35 PASS / 0 FAIL (ajouts : dossier par manif, invitations numérotées, action `status`, dépôt audio, envoi en cours pendant un changement de dossier) |
+| SpectreCore (`swift test`, Mac) | 30 PASS / 0 FAIL (ajouts : `depositStatus`, dépôt audio m4a) |
+| Apps Script réel | `clasp push` + mise à jour du déploiement existant (version 3, même URL /exec) |
+| Signature | Équipe payante (Apple Developer Program, personne physique) ; App ID en « Protected Unless Open » ; `default-data-protection = NSFileProtectionCompleteUnlessOpen` vérifié par `codesign` ; aucun secret ni URL /exec dans le binaire |
+| iPhone | Build Debug installée et lancée (nouvel accueil noir et blanc) |
+
+À constater par le propriétaire : accueil, carte « DÉPÔT · … », essai dictaphone (.m4a dans le Drive).
+
 ## Non exécuté (SKIP — impossible ici)
 | Élément | Raison | Où le faire |
 |---|---|---|
