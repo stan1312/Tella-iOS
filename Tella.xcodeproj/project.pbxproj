@@ -643,6 +643,7 @@
 		8CF77303A8774850C8D233A9 /* SpectreDepositService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A2FC8B4CE988A7F06126C2 /* SpectreDepositService.swift */; };
 		934B1C71DE9977A3BC472325 /* libPods-Tella-TellaUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C993ADB6B19E7EA5B83B95B5 /* libPods-Tella-TellaUITests.a */; };
 		97F847AFD23EA92B94277735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48039B2D39F1044496B60755 /* Foundation.framework */; };
+		9AD5A9E89F275F1FD5D34A0B /* SpectreSystemCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A530B9EFD4DC43517D66C3 /* SpectreSystemCamera.swift */; };
 		9C1E46507CDC2E9C0499D676 /* Enrollment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 086B650BC724A792D7178151 /* Enrollment.swift */; };
 		B3E000F081E00AFEF002BDEA /* SpectreKeychainSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F2D04FE4E231EE1D147ABA /* SpectreKeychainSecretStore.swift */; };
 		BBA127E5791AFBEAC473625B /* libPods-Tella.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B535530A1B803891A53389 /* libPods-Tella.a */; };
@@ -1458,6 +1459,7 @@
 		20E4DA882C380F7400123843 /* CreateNextcloudFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNextcloudFolderView.swift; sourceTree = "<group>"; };
 		20F3E6002CB5D9EC00B570E3 /* EditFileCancelBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFileCancelBottomSheet.swift; sourceTree = "<group>"; };
 		20FA030C2CD282C3001121F1 /* TrimMediaSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrimMediaSliderView.swift; sourceTree = "<group>"; };
+		22A530B9EFD4DC43517D66C3 /* SpectreSystemCamera.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreSystemCamera.swift; sourceTree = "<group>"; };
 		2EF0B11BECDDC72DB29E989D /* EncryptedOutbox.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EncryptedOutbox.swift; sourceTree = "<group>"; };
 		37DC6845E48CFF0D7CABBD38 /* Pods-Tella-TellaUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tella-TellaUITests.release.xcconfig"; path = "Target Support Files/Pods-Tella-TellaUITests/Pods-Tella-TellaUITests.release.xcconfig"; sourceTree = "<group>"; };
 		40F2D04FE4E231EE1D147ABA /* SpectreKeychainSecretStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpectreKeychainSecretStore.swift; sourceTree = "<group>"; };
@@ -3722,6 +3724,7 @@
 				0BF4BF98809B080BDD9F0777 /* SpectreStorage.swift */,
 				AAD2E7CAE5690C569E62993E /* SpectreVideoCapabilities.swift */,
 				6C7FF7349E2E9C43B6688F19 /* TellaVaultCopyHandler.swift */,
+				22A530B9EFD4DC43517D66C3 /* SpectreSystemCamera.swift */,
 			);
 			name = Spectre;
 			path = Spectre;
@@ -5269,6 +5272,7 @@
 				3C6EA68FBE390DAF1B2B5505 /* ResumableUploader.swift in Sources */,
 				F169262CF0AF11CD834FB0DA /* Stores.swift in Sources */,
 				1B0BC0EAC3368E1E6055D261 /* SpectreHTTPTransport.swift in Sources */,
+				9AD5A9E89F275F1FD5D34A0B /* SpectreSystemCamera.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
