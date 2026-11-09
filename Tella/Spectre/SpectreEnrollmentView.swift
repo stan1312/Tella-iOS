@@ -20,20 +20,22 @@ struct SpectreEnrollmentView: View {
                 Text("Scannez l'invitation personnelle remise par le responsable. Elle ne fonctionne qu'une fois.")
                     .multilineTextAlignment(.center)
                 SpectreQRScanner { code in submit(code) }
-                    .frame(height: 260).cornerRadius(12)
+                    .frame(height: 260).overlay(Rectangle().stroke(Color.white, lineWidth: 1))
                 TextField("…ou collez le lien d'invitation", text: $manual)
                     .textInputAutocapitalization(.never).disableAutocorrection(true)
                     .textFieldStyle(.roundedBorder)
                 Button("Valider") { submit(manual) }.disabled(manual.isEmpty || busy)
                 if busy { ProgressView() }
                 if let e = service.lastEnrollmentError { Text(e).foregroundColor(.red) }
-                if done { Text("Appareil configuré. Vous pouvez filmer.").foregroundColor(.green) }
+                if done { Text("Appareil configuré. Vous pouvez filmer.").foregroundColor(.white) }
                 Spacer()
             }
             .padding()
             .navigationTitle("Configuration")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { presentation.wrappedValue.dismiss() } } }
         }
+        .preferredColorScheme(.dark)
+        .tint(.white)
     }
 
     private func submit(_ text: String) {

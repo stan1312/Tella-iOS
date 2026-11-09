@@ -38,10 +38,12 @@ struct SpectreStatusView: View {
                     }
                 }
             }
-            .navigationTitle("SPECTRE Capture")
+            .navigationTitle("SPECTRE")
             .sheet(isPresented: $showEnrollment) { SpectreEnrollmentView(service: service) }
         }
         .navigationViewStyle(.stack)
+        .preferredColorScheme(.dark)
+        .tint(.white)
     }
 }
 
@@ -118,10 +120,10 @@ struct SpectreRecordRow: View {
     }
     private func color(_ s: UserFacingStatus) -> Color {
         switch s {
-        case .confirmed: return .green
+        case .confirmed: return .white
         case .blocked, .error: return .red
-        case .confirmedLocalCopyRemains: return .orange
-        default: return .accentColor
+        case .confirmedLocalCopyRemains: return .gray
+        default: return .white.opacity(0.7)
         }
     }
 }

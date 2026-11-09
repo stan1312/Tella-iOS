@@ -35,7 +35,7 @@ struct SettingsBottomView: View {
             } label: {
                 Text(saveActionTitle)
                     .font(.custom(Styles.Fonts.semiBoldFontName, size: 14))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .padding(EdgeInsets(top: 10, leading: 25, bottom: 10, trailing: 25))
                     .background(Styles.Colors.yellow)
                     .opacity(isDisable ? 0.8 : 1)

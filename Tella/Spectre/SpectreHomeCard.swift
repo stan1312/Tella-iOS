@@ -20,15 +20,15 @@ struct SpectreHomeCard: View {
                 Image(systemName: problemCount > 0 ? "exclamationmark.triangle.fill" : "icloud.and.arrow.up")
                     .foregroundColor(problemCount > 0 ? .red : .white)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Dépôt SPECTRE").font(.headline).foregroundColor(.white)
-                    Text(summary).font(.footnote).foregroundColor(.white.opacity(0.8))
+                    Text("DÉPÔT SPECTRE").font(.custom(Styles.Fonts.boldFontName, size: 13)).kerning(1.2).foregroundColor(.white)
+                    Text(summary).font(.system(size: 12, design: .monospaced)).foregroundColor(.white.opacity(0.7))
                 }
                 Spacer()
                 Image(systemName: "chevron.right").foregroundColor(.white.opacity(0.6))
             }
             .padding()
-            .background(Color.white.opacity(0.08))
-            .cornerRadius(12)
+            .background(Color.black)
+            .overlay(Rectangle().stroke(Color.white, lineWidth: 1))
             .padding(.horizontal, 16)
         }
         .accessibilityIdentifier("spectre.homecard")
