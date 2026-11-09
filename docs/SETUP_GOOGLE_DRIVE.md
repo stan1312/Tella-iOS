@@ -58,7 +58,7 @@ clasp push
 - Avant la manifestation : `spectreNouvelleManif` → *Exécuter*. Crée `MANIF_AAAA-MM-JJ` dans le dossier de dépôt ; **tous les dépôts suivants y arrivent**. Renommez-le librement dans Drive (par ex. `2026-11-15_Manif_X`) : le lien est conservé.
 - Les envois déjà commencés se terminent dans l'ancien dossier, sans perte.
 - `spectreDossierPrincipal` → les dépôts reviennent dans le dossier principal.
-- Les téléphones n'ont rien à faire : ils ne voient jamais le Drive.
+- Les téléphones n'ont rien à faire : ils ne voient jamais le Drive. Ils affichent seulement **le nom du dossier en cours** sur la carte de dépôt (action `status`, signée par l'appareil, qui ne renvoie que ce nom). Un téléphone saisi révèle donc ce nom : choisissez un intitulé qui ne met personne en danger.
 
 ## 6. Révoquer (téléphone perdu, départ d'un membre)
 - Un appareil : dans `spectreRevokeDevice`, remplacez `'d_0000000000000000'` par l'id, *Exécuter*. Effet immédiat : ses prochaines requêtes reçoivent `DEVICE_REVOKED`. Les autres appareils continuent.

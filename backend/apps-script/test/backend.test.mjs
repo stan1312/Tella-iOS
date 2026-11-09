@@ -352,6 +352,37 @@ describe('owner admin: colleagues and one folder per demonstration', () => {
   });
 });
 
+describe('status shown on the phone and audio deposits', () => {
+  test('status returns only the current deposit folder name (main, then demonstration of the day)', async () => {
+    const c = await H.enroll(s);
+    let r = await H.call(s, c, 'status', {});
+    assert.equal(r.ok, true, JSON.stringify(r));
+    assert.deepEqual(Object.keys(r.data).sort(), ['depositName', 'isEvent']);
+    assert.equal(r.data.depositName, 'SPECTRE_DEPOT_TEST');
+    assert.equal(r.data.isEvent, false);
+    const name = s.gas.ctx.spectreNouvelleManif();
+    r = await H.call(s, c, 'status', {});
+    assert.equal(r.data.depositName, name);
+    assert.equal(r.data.isEvent, true);
+  });
+  test('status requires a valid device signature', async () => {
+    const c = await H.enroll(s);
+    const r = await H.call(s, c, 'status', {}, { tamper: true });
+    assert.equal(r.error.code, 'AUTH_INVALID');
+  });
+  test('an audio recording (audio/mp4, .m4a) is deposited and verified', async () => {
+    const c = await H.enroll(s);
+    const buf = H.fixture(4000, 9);
+    const p = H.initPayload(buf, undefined, { mimeType: 'audio/mp4', ext: 'm4a' });
+    const init = await H.call(s, c, 'initUpload', p);
+    assert.equal(init.ok, true, JSON.stringify(init));
+    const up = await H.uploadBytes(init.data.sessionUrl, buf);
+    const fin = await H.call(s, c, 'finalizeUpload', { uploadId: init.data.uploadId, captureId: p.captureId, driveFileId: up.file.id });
+    assert.equal(fin.data.state, 'VERIFIED');
+    assert.match(s.drive.files.get(up.file.id).name, /\.m4a$/);
+  });
+});
+
 describe('static checks of the Apps Script source', () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const src = fs.readdirSync(path.join(here, '../src')).filter((f) => f.endsWith('.js'))

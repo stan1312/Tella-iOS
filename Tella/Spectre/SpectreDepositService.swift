@@ -2,7 +2,7 @@
 //  SPECTRE Capture — glue between Tella and SpectreCore.
 //
 //  Flow: CameraService records → Tella encrypts into its vault (unchanged) →
-//  EncryptionService reports .completed for a camera file → handleNewCameraVideo
+//  EncryptionService reports .completed for a camera or dictaphone file → handleNewCapture
 //  registers a durable task and builds the SPECTRE encrypted outbox from the
 //  vault copy → DepositEngine uploads to Drive via a backend-issued resumable
 //  session → backend verifies → receipt verified → all managed copies deleted.
@@ -31,6 +31,9 @@ final class SpectreDepositService: ObservableObject, @unchecked Sendable {
     @Published private(set) var records: [CaptureRecord] = []
     @Published private(set) var isEnrolled: Bool = false
     @Published private(set) var lastEnrollmentError: String?
+    /// Name of the folder receiving deposits now (the demonstration of the day), from the backend.
+    @Published private(set) var depositName: String?
+    @Published private(set) var depositIsEvent: Bool = false
 
     private weak var mainAppModel: MainAppModel?
     private let secrets = SpectreKeychainSecretStore()
@@ -85,11 +88,21 @@ final class SpectreDepositService: ObservableObject, @unchecked Sendable {
         return "\(String(c[0..<8]))-\(String(c[8..<12]))-4\(String(c[13..<16]))-a\(String(c[17..<20]))-\(String(c[20..<32]))"
     }
 
-    func handleNewCameraVideo(_ vaultFile: VaultFileDB) {
-        guard let engine, let vaultId = vaultFile.id, vaultFile.tellaFileType == .video else { return }
+    /// Camera videos and dictaphone recordings become durable deposit tasks.
+    /// Idempotent: the capture id is derived from the vault id.
+    func handleNewCapture(_ vaultFile: VaultFileDB) {
+        guard let engine, let vaultId = vaultFile.id else { return }
+        let ext: String, mime: String
+        switch vaultFile.tellaFileType {
+        case .video:
+            ext = vaultFile.fileExtension.lowercased() == "mp4" ? "mp4" : "mov"
+            mime = ext == "mp4" ? "video/mp4" : "video/quicktime"
+        case .audio:
+            ext = "m4a"; mime = "audio/mp4"
+        default:
+            return
+        }
         let captureId = Self.captureId(forVaultFileId: vaultId)
-        let ext = vaultFile.fileExtension.lowercased() == "mp4" ? "mp4" : "mov"
-        let mime = ext == "mp4" ? "video/mp4" : "video/quicktime"
         Task {
             do {
                 // 1) durable task, created immediately at the end of the recording
@@ -149,6 +162,18 @@ final class SpectreDepositService: ObservableObject, @unchecked Sendable {
         Task { try? await engine.retryNow(captureId); self.kick() }
     }
 
+    /// Asks the backend which folder receives deposits now (label only). Silent on failure.
+    func refreshDepositStatus() {
+        guard let creds = CredentialVault(secrets: secrets).load() else { return }
+        Task {
+            guard let st = try? await HTTPDepositBackend(transport: URLSessionTransport(timeout: 20)).depositStatus(credentials: creds) else { return }
+            await MainActor.run {
+                self.depositName = st.depositName
+                self.depositIsEvent = st.isEvent
+            }
+        }
+    }
+
     private func refresh() async {
         guard let engine else { return }
         let all = ((try? await engine.allRecords()) ?? []).sorted { $0.createdAt > $1.createdAt }
@@ -197,6 +222,7 @@ final class SpectreDepositService: ObservableObject, @unchecked Sendable {
             }
             await refresh()
             kick()
+            refreshDepositStatus()
             return true
         } catch {
             await MainActor.run { self.lastEnrollmentError = "Invitation invalide, expirée ou déjà utilisée." }

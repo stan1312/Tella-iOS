@@ -154,12 +154,12 @@ struct Phone {
     }
 
     /// Simulates "stop recording": camera temp file + vault entry + durable task + outbox.
-    func capture(_ bytes: Data, captureId: String = UUID().uuidString.lowercased()) async throws -> String {
+    func capture(_ bytes: Data, captureId: String = UUID().uuidString.lowercased(), mimeType: String = "video/quicktime", ext: String = "mov") async throws -> String {
         let tmp = root.appendingPathComponent("tmp"); try FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
-        let cam = tmp.appendingPathComponent("movie-\(captureId).mov")
+        let cam = tmp.appendingPathComponent("movie-\(captureId).\(ext)")
         try bytes.write(to: cam)
         vault.add("vault-\(captureId)", Data("ENCRYPTED-BY-TELLA".utf8) + bytes.prefix(16))
-        try await engine.register(captureId: captureId, mimeType: "video/quicktime", fileExtension: "mov", localCopies: [
+        try await engine.register(captureId: captureId, mimeType: mimeType, fileExtension: ext, localCopies: [
             LocalCopyRef(kind: .vaultEntry, reference: "vault-\(captureId)"),
             LocalCopyRef(kind: .cameraOriginalTemp, reference: cam.path),
         ])

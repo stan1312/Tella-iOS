@@ -44,6 +44,20 @@ public protocol DepositBackend: Sendable {
     func enroll(endpoint: URL, inviteCode: String) async throws -> DeviceCredentials
     func initUpload(_ req: InitUploadRequest, credentials: DeviceCredentials) async throws -> InitUploadResult
     func finalize(uploadId: String, captureId: String, driveFileId: String?, credentials: DeviceCredentials) async throws -> FinalizeResult
+    /// Name of the folder currently receiving deposits (e.g. the demonstration of the day). Label only.
+    func depositStatus(credentials: DeviceCredentials) async throws -> DepositStatus
+}
+
+public struct DepositStatus: Equatable, Sendable {
+    public var depositName: String
+    public var isEvent: Bool
+    public init(depositName: String, isEvent: Bool) { self.depositName = depositName; self.isEvent = isEvent }
+}
+
+public extension DepositBackend {
+    func depositStatus(credentials: DeviceCredentials) async throws -> DepositStatus {
+        throw SpectreError.protocolViolation("status not supported")
+    }
 }
 
 public final class HTTPDepositBackend: DepositBackend, @unchecked Sendable {
@@ -139,6 +153,12 @@ public final class HTTPDepositBackend: DepositBackend, @unchecked Sendable {
         case "MISMATCH": return .mismatch(detail: d["detail"] as? String ?? "")
         default: throw SpectreError.protocolViolation("unknown finalize state")
         }
+    }
+
+    public func depositStatus(credentials: DeviceCredentials) async throws -> DepositStatus {
+        let d = try await call(endpoint: credentials.endpoint, action: "status", payload: [:], credentials: credentials)
+        guard let name = d["depositName"] as? String else { throw SpectreError.protocolViolation("bad status") }
+        return DepositStatus(depositName: String(name.prefix(80)), isEvent: (d["isEvent"] as? Bool) ?? false)
     }
 
     static func decodeReceipt(_ any: Any?) throws -> DepositReceipt {

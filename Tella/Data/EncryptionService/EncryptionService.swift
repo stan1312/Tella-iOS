@@ -86,9 +86,9 @@ class EncryptionService: ObservableObject {
                                         autoUpload: Bool)  {
         switch result {
         case .completed(let vaultFile):
-            // SPECTRE: every camera video becomes a durable deposit task.
-            if fileDetail.importedFile.fileSource == .camera {
-                self.mainAppModel.spectre.handleNewCameraVideo(vaultFile)
+            // SPECTRE: every camera video and dictaphone recording becomes a durable deposit task.
+            if fileDetail.importedFile.fileSource == .camera || fileDetail.importedFile.fileSource == .recorder {
+                self.mainAppModel.spectre.handleNewCapture(vaultFile)
             }
             if autoUpload {
                 self.mainAppModel.sendAutoReportFile(file: vaultFile)

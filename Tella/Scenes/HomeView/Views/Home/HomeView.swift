@@ -30,27 +30,15 @@ struct HomeView: View {
         VStack() {
             ScrollView {
                 VStack {
-                    // SPECTRE Capture deposit status
+                    // SPECTRE: deposit status (with the demonstration of the day),
+                    // then two capture buttons whose recordings go to the deposit.
                     SpectreHomeCard(service: mainAppModel.spectre)
                         .padding(.top, 12)
+                    SpectreCaptureButtons(mainAppModel: mainAppModel)
+                        .padding(.top, 16)
                     Spacer()
-                        .frame( height: !viewModel.serverDataItemArray.isEmpty ? 16 : 0 )
+                        .frame(height: 32)
                     ConnectionsView(homeViewModel: viewModel)
-                    
-                    Spacer()
-                        .frame( height: (!viewModel.serverDataItemArray.isEmpty && viewModel.recentFiles.count > 0) ? 16 : 0 )
-                    
-                    if mainAppModel.settings.showRecentFiles {
-                        Spacer()
-                            .frame( height: viewModel.recentFiles.count > 0 ? 16 : 0 )
-                        RecentFilesListView(mainAppModel: mainAppModel,
-                                            recentFiles: $viewModel.recentFiles)
-                    }
-                    
-                    Spacer()
-                        .frame(height: 30)
-                    
-                    FileGroupsView(mainAppModel: mainAppModel, shouldShowFilesTitle: viewModel.showingFilesTitle)
                 }
             }
             
@@ -92,8 +80,9 @@ struct HomeView: View {
             
             Spacer()
             
-            Text(LocalizableHome.appBar.localized)
-                .font(.custom(Styles.Fonts.boldFontName, size: 24))
+            Text("SPECTRE")
+                .font(.custom(Styles.Fonts.boldFontName, size: 20))
+                .kerning(3)
                 .foregroundColor(Color.white)
             
             Spacer()
@@ -101,9 +90,11 @@ struct HomeView: View {
             Button {
                 viewModel.items.count > 0 ? showBgEncryptionConfirmationView() : viewModel.appViewState.resetToUnlock()
             } label: {
-                Image("home.close")
-                    .aspectRatio(contentMode: .fit)
+                Image(systemName: "lock")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(.white)
                     .frame(width: 35, height: 35)
+                    .accessibilityLabel("Verrouiller")
             }
         }.frame(height: 57)
             .padding(.horizontal, 16)

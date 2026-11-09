@@ -14,7 +14,7 @@ function SpectreError_(code, message) {
 
 function spErr_(code, message) { return new SpectreError_(code, message); }
 
-var SPECTRE_ACTIONS_ = { enroll: true, initUpload: true, finalizeUpload: true };
+var SPECTRE_ACTIONS_ = { enroll: true, initUpload: true, finalizeUpload: true, status: true };
 
 /** Entry point for one web request (raw POST body string). Returns a plain object. */
 function spectreHandle_(env, rawBody) {
@@ -37,6 +37,7 @@ function spectreHandle_(env, rawBody) {
     var device = spAuthenticate_(env, envl);
     if (envl.action === 'initUpload') return { ok: true, data: spInitUpload_(env, device, payload) };
     if (envl.action === 'finalizeUpload') return { ok: true, data: spFinalize_(env, device, payload) };
+    if (envl.action === 'status') return { ok: true, data: spStatus_(env) };
     throw spErr_('INVALID_REQUEST', 'action');
   } catch (e) {
     if (e instanceof SpectreError_) {
@@ -417,4 +418,29 @@ function spAdminPurge_(env) {
     if (i && i.expiresAt < env.now() - 7 * 86400000) env.store.del(k);
   });
   return removed;
+}
+
+// ---------------------------------------------------------------- status
+
+/**
+ * Name of the folder that receives deposits right now (e.g. the demonstration of
+ * the day), so the phone can show it. Only this label is returned: no id, no
+ * listing, no file information. The owner may rename the folder in Drive; the
+ * name is re-read from Drive at most every 10 minutes.
+ */
+function spStatus_(env) {
+  var cfg = spConfig_(env);
+  var root = env.store.get('CFG_ROOT_FOLDER_ID') || cfg.folderId;
+  var now = env.now();
+  var cached = spGetJson_(env, 'CFG_FOLDER_LABEL');
+  if (!cached || cached.folderId !== cfg.folderId || now - cached.at > 600000) {
+    var name = cached && cached.folderId === cfg.folderId ? cached.name : '';
+    try {
+      var f = spDriveGet_(env, cfg, cfg.folderId);
+      if (f && typeof f.name === 'string') name = f.name;
+    } catch (e) { /* keep the last known name */ }
+    cached = { folderId: cfg.folderId, name: String(name).slice(0, 80), at: now };
+    spPutJson_(env, 'CFG_FOLDER_LABEL', cached);
+  }
+  return { depositName: cached.name, isEvent: cfg.folderId !== root };
 }

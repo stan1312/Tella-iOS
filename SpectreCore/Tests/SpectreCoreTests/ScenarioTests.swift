@@ -36,6 +36,25 @@ final class ScenarioTests: XCTestCase {
         XCTAssertEqual(r.userFacingStatus, .confirmed)
     }
 
+    // Status shown on the home screen: current deposit folder name only.
+    func testDepositStatusReturnsCurrentFolderNameOnly() async throws {
+        let p = try Phone.make()
+        let creds = try await p.enroll(stack)
+        let st = try await HTTPDepositBackend(transport: URLSessionTransport()).depositStatus(credentials: creds)
+        XCTAssertEqual(st, DepositStatus(depositName: "SPECTRE_DEPOT_TEST", isEvent: false))
+    }
+
+    // Dictaphone: an m4a recording follows the same verified path as a video.
+    func testAudioRecordingIsDepositedAndVerified() async throws {
+        let p = try Phone.make()
+        _ = try await p.enroll(stack)
+        let bytes = syntheticBytes(300_000, seed: 4)
+        let id = try await p.capture(bytes, mimeType: "audio/mp4", ext: "m4a")
+        let r = await p.run(id)
+        XCTAssertEqual(r.stage, .completed, "\(String(describing: r.failure))")
+        XCTAssertTrue(try allLocalCopiesGone(p, id))
+    }
+
     // T03: airplane mode before stopping the recording
     func testT03_offlineCaptureKeepsOriginalAndVisibleTask() async throws {
         let offlineEndpoint = URL(string: "http://127.0.0.1:9/macros/s/MOCK/exec")!   // nothing listens on port 9

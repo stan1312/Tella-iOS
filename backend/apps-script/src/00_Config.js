@@ -21,7 +21,7 @@ var SPECTRE_POLICY = {
   pendingRetryAfterSec: 20,
   acceptMd5Fallback: true,
   purgeVerifiedAfterDays: 30,
-  allowedMime: { 'video/quicktime': 'mov', 'video/mp4': 'mp4' }
+  allowedMime: { 'video/quicktime': 'mov', 'video/mp4': 'mp4', 'audio/mp4': 'm4a' }
 };
 
 var SPECTRE_DRIVE_FIELDS = 'id,name,size,md5Checksum,sha256Checksum,parents,appProperties,trashed,mimeType';
