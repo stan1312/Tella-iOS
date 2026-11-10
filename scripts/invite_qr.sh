@@ -11,8 +11,11 @@ set -euo pipefail
 command -v qrencode >/dev/null || { echo "brew install qrencode"; exit 2; }
 if [ "${1:-}" = "--drive" ]; then
   OUT="${2:-$HOME/Desktop/SPECTRE_invitation_QR.png}"
-  FILE="$(find "$HOME/Library/CloudStorage" -name 'SPECTRE_INVITATION_A_SUPPRIMER*.txt' 2>/dev/null | head -1)"
-  [ -n "$FILE" ] || { echo "Fichier d'invitation introuvable (synchronisation Drive en cours ?)"; exit 1; }
+  # The invitation file sits in the deposit folder (top level of My Drive): search shallowly,
+  # never the whole Drive (a deep find on a streamed Drive can take minutes).
+  echo "Recherche du fichier d'invitation dans Google Drive…"
+  FILE="$(find "$HOME/Library/CloudStorage" -maxdepth 4 -name 'SPECTRE_INVITATION_A_SUPPRIMER*.txt' 2>/dev/null | head -1)"
+  [ -n "$FILE" ] || { echo "Introuvable. Autre méthode : copiez le contenu du fichier dans Drive (Cmd+A, Cmd+C) puis"; echo "  ./scripts/invite_qr.sh \"\$(pbpaste)\" \"$OUT\""; exit 1; }
   LINK="$(head -1 "$FILE")"
   [[ "$LINK" == spectre://enroll* ]] || { echo "contenu inattendu"; exit 1; }
   printf '%s' "$LINK" | qrencode -o "$OUT" -s 8
