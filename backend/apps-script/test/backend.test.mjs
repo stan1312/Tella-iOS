@@ -388,7 +388,7 @@ describe('owner control page and invitation links', () => {
   const PUBLIC_ADMIN = ['spectreInstall', 'spectreSetup', 'spectreSetWebAppUrl', 'spectreCreateInvite', 'spectreNouvelleInvitation',
     'spectreNouvelleManif', 'spectreDossierPrincipal', 'spectreListDevices', 'spectreRevokeDevice', 'spectreRevokeAllDevices',
     'spectrePilotageEtat', 'spectrePilotageManif', 'spectrePilotageDossierPrincipal', 'spectrePilotageInviter',
-    'spectrePilotageLienApk', 'spectrePilotageRevoquer'];
+    'spectrePilotageLienApk', 'spectrePilotageLienIos', 'spectrePilotageRevoquer'];
 
   test('anonymous visitor: GET /exec still answers NOT_FOUND (no control page, nothing listed)', async () => {
     const r = await fetch(s.webAppUrl);
@@ -464,6 +464,18 @@ describe('owner control page and invitation links', () => {
     const page = await (await fetch(inv.link)).text();
     assert.ok(!/Télécharger/.test(page), 'no APK button when no APK link is set');
     assert.equal(inv.label, '<b>Alex< b>', 'label cleaned (shown with textContent on the control page)');
+  });
+  test('one invitation link for both platforms: APK for Android, TestFlight for iPhone', async () => {
+    s.gas.ctx.spectrePilotageLienApk('https://drive.google.com/file/d/FAKE_APK/view');
+    s.gas.ctx.spectrePilotageLienIos('https://testflight.apple.com/join/FAKE1234');
+    assert.equal(s.gas.ctx.spectrePilotageEtat().iosUrl, 'https://testflight.apple.com/join/FAKE1234');
+    const inv = s.gas.ctx.spectrePilotageInviter('');
+    const page = await (await fetch(inv.link)).text();
+    assert.ok(page.includes('data-os="android"') && page.includes('href="https://drive.google.com/file/d/FAKE_APK/view"'));
+    assert.ok(page.includes('data-os="ios"') && page.includes('href="https://testflight.apple.com/join/FAKE1234"'));
+    assert.throws(() => s.gas.ctx.spectrePilotageLienIos('http://testflight.apple.com/join/x'), /https/);
+    s.gas.ctx.spectrePilotageLienIos('');
+    assert.equal(s.gas.ctx.spectrePilotageEtat().iosUrl, '');
   });
   test('revocation from the control page', async () => {
     const c = await H.enroll(s);

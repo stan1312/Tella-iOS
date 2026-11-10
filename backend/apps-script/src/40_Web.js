@@ -62,11 +62,19 @@ function spInvitePage_(env, code) {
   var deep = 'spectre://' + q;
   var intent = 'intent://' + q + '#Intent;scheme=spectre;' +
     (apk ? 'S.browser_fallback_url=' + encodeURIComponent(apk) + ';' : '') + 'end';
+  var ios = env.store.get('CFG_IOS_URL') || '';
+  // Step 1 depends on the phone: the APK on Android, TestFlight on iPhone (chosen by the script
+  // below; without JavaScript both are shown).
+  var install = (apk || ios)
+    ? '<p class="step">1. Installer l\'application</p>' +
+      (apk ? '<div data-os="android"><a class="btn" target="_top" href="' + spEsc_(apk) + '">Télécharger SPECTRE Capture (Android)</a>' +
+             '<p class="muted">Ouvrez le fichier téléchargé et autorisez l\'installation. Ouvrez l\'appli une fois et créez votre code, puis revenez ici.</p></div>' : '') +
+      (ios ? '<div data-os="ios"><a class="btn" target="_top" href="' + spEsc_(ios) + '">Installer SPECTRE Capture (iPhone, TestFlight)</a>' +
+             '<p class="muted">Installez TestFlight si demandé, puis SPECTRE Capture. Ouvrez l\'appli une fois et créez votre code, puis revenez ici.</p></div>' : '')
+    : '';
   var body = valid
-    ? '<p class="muted">Invitation personnelle : elle ne sert qu\'une fois et expire après 48 h.</p>' +
-      (apk ? '<p class="step">1. Installer l\'application</p><a class="btn" target="_top" href="' + spEsc_(apk) + '">Télécharger SPECTRE Capture</a>' +
-             '<p class="muted">Ouvrez le fichier téléchargé et autorisez l\'installation. Créez ensuite votre code de verrouillage.</p>' : '') +
-      '<p class="step">' + (apk ? '2. ' : '') + 'Rejoindre le dépôt</p>' +
+    ? '<p class="muted">Invitation personnelle : elle ne sert qu\'une fois et expire après 48 h.</p>' + install +
+      '<p class="step">' + (install ? '2. ' : '') + 'Rejoindre le dépôt</p>' +
       '<a class="btn fill" id="join" target="_top" href="' + spEsc_(deep) + '" data-android="' + spEsc_(intent) + '">Ouvrir dans SPECTRE Capture</a>' +
       '<p class="muted">Si rien ne se passe : copiez l\'adresse de cette page, puis ouvrez SPECTRE Capture, elle la reconnaîtra.</p>'
     : '<p>Lien d\'invitation incomplet. Demandez-en un nouveau.</p>';
@@ -76,8 +84,11 @@ function spInvitePage_(env, code) {
     '.muted{color:#999;font-size:14px}.btn{display:block;text-align:center;padding:16px;border:2px solid #fff;color:#fff;' +
     'text-decoration:none;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.fill{background:#fff;color:#000}' +
     '</style></head><body><h1>SPECTRE CAPTURE</h1>' + body +
-    '<script>(function(){var a=document.getElementById("join");' +
-    'if(a&&/Android/i.test(navigator.userAgent))a.href=a.getAttribute("data-android");})();</script></body></html>';
+    '<script>(function(){var ua=navigator.userAgent,android=/Android/i.test(ua),ios=/iPhone|iPad|iPod/i.test(ua);' +
+    'var a=document.getElementById("join");if(a&&android)a.href=a.getAttribute("data-android");' +
+    'var os=android?"android":ios?"ios":"";if(os){var l=document.querySelectorAll("[data-os]");var has=false;' +
+    'for(var i=0;i<l.length;i++)if(l[i].getAttribute("data-os")===os)has=true;' +
+    'if(has)for(var j=0;j<l.length;j++)if(l[j].getAttribute("data-os")!==os)l[j].style.display="none";}})();</script></body></html>';
   return HtmlService.createHtmlOutput(html).setTitle('SPECTRE Capture · Invitation')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
@@ -94,6 +105,7 @@ function spectrePilotageEtat() {
     rootName: spFolderName_(env, root),
     isEvent: current !== root,
     apkUrl: env.store.get('CFG_APK_URL') || '',
+    iosUrl: env.store.get('CFG_IOS_URL') || '',
     devices: spAdminListDevices_(env).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })
   };
 }
@@ -119,17 +131,27 @@ function spectrePilotageInviter(label) {
   var link = spInviteHttpsLink_(env, inv.code);
   return {
     label: label, link: link, expiresAt: inv.expiresAt,
-    message: 'Rejoins le dépôt SPECTRE : ouvre ce lien sur ton téléphone Android, installe l\'appli puis touche « Ouvrir dans SPECTRE Capture ».\n' +
+    message: 'Rejoins le dépôt SPECTRE : ouvre ce lien sur ton téléphone (Android ou iPhone), installe l\'appli, crée ton code, puis reviens sur le lien et touche « Ouvrir dans SPECTRE Capture ».\n' +
       link + '\n(Lien personnel : une seule utilisation, valable 48 h.)'
   };
 }
 
 function spectrePilotageLienApk(url) {
   spRequireOwner_();
+  return spSetLink_('CFG_APK_URL', url);
+}
+
+/** TestFlight public link (https://testflight.apple.com/join/…) shown to iPhones on the invitation page. */
+function spectrePilotageLienIos(url) {
+  spRequireOwner_();
+  return spSetLink_('CFG_IOS_URL', url);
+}
+
+function spSetLink_(key, url) {
   url = String(url || '').trim();
   if (url && !/^https:\/\/[^\s"'<>]{4,500}$/.test(url)) throw new Error('Adresse invalide : elle doit commencer par https://');
   var env = spGasEnv_();
-  if (url) env.store.set('CFG_APK_URL', url); else env.store.del('CFG_APK_URL');
+  if (url) env.store.set(key, url); else env.store.del(key);
   return url;
 }
 
@@ -179,7 +201,9 @@ function spAdminPageHtml_() {
     '<div id="inv" style="display:none"><textarea id="msg" rows="5" readonly></textarea>' +
     '<button id="bCopy">Copier le message</button><div class="muted">Un lien par personne : une seule utilisation, valable 48 h.</div></div>' +
     '<h2>Lien de téléchargement de l\'APK</h2><input id="apk" placeholder="https://drive.google.com/…">' +
-    '<button class="ghost" id="bApk">Enregistrer</button><div class="muted">Affiché sur la page d\'invitation (bouton « Télécharger »).</div>' +
+    '<button class="ghost" id="bApk">Enregistrer</button><div class="muted">Montré aux téléphones Android sur la page d\'invitation.</div>' +
+    '<h2>Lien TestFlight (iPhone)</h2><input id="ios" placeholder="https://testflight.apple.com/join/…">' +
+    '<button class="ghost" id="bIos">Enregistrer</button><div class="muted">Montré aux iPhone sur la page d\'invitation.</div>' +
     '<h2>Téléphones inscrits</h2><table id="dev"></table>' +
     '<p class="err" id="err"></p>' +
     '<script>' +
@@ -189,7 +213,7 @@ function spAdminPageHtml_() {
     '.withFailureHandler(function(e){busy(false);$("err").textContent=(e&&e.message)||String(e)});r[fn](arg)}' +
     'function d(t){return t?new Date(t).toLocaleString("fr-CH"):"–"}' +
     'function load(){run("spectrePilotageEtat",null,function(s){$("dest").textContent=s.depositName||"(sans nom)";' +
-    '$("destNote").textContent=s.isEvent?"Dossier de manif, dans "+s.rootName:"Dossier principal";$("apk").value=s.apkUrl;' +
+    '$("destNote").textContent=s.isEvent?"Dossier de manif, dans "+s.rootName:"Dossier principal";$("apk").value=s.apkUrl;$("ios").value=s.iosUrl;' +
     'var t=$("dev");t.innerHTML="";s.devices.forEach(function(x){var tr=document.createElement("tr");' +
     '[x.label||x.id,x.status==="active"?"actif":"révoqué","vu "+d(x.lastSeenAt)].forEach(function(c){var td=document.createElement("td");td.textContent=c;tr.appendChild(td)});' +
     'var td=document.createElement("td");if(x.status==="active"){var b=document.createElement("button");b.className="ghost";b.textContent="Révoquer";' +
@@ -201,6 +225,7 @@ function spAdminPageHtml_() {
     '$("bInvite").onclick=function(){run("spectrePilotageInviter",$("label").value,function(v){$("msg").value=v.message;$("inv").style.display="block";$("label").value="";load()})};' +
     '$("bCopy").onclick=function(){$("msg").select();try{navigator.clipboard.writeText($("msg").value).then(function(){$("bCopy").textContent="Copié"},function(){document.execCommand("copy");$("bCopy").textContent="Copié"})}catch(e){document.execCommand("copy");$("bCopy").textContent="Copié"}};' +
     '$("bApk").onclick=function(){run("spectrePilotageLienApk",$("apk").value,load)};' +
+    '$("bIos").onclick=function(){run("spectrePilotageLienIos",$("ios").value,load)};' +
     'load();' +
     '</script></body></html>';
 }
