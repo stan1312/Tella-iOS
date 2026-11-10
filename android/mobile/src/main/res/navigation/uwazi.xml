@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/uwazi"
+    app:startDestination="@+id/uwaziScreen">
+    <fragment
+        android:id="@+id/uwaziScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.viewpagerfragments.UwaziTabsFragment"
+        android:label="Uwazi"
+        tools:layout="@layout/main_report_connexion">
+        <action
+            android:id="@+id/action_uwaziScreen_to_uwaziDownloadScreen"
+            app:destination="@id/uwaziDownloadScreen" />
+        <action
+            android:id="@+id/action_uwaziScreen_to_uwaziEntryScreen"
+            app:destination="@id/uwaziEntryScreen" />
+
+        <action
+            android:id="@+id/action_uwaziEntryScreen_to_uwaziSendScreen"
+            app:destination="@id/uwaziSendScreen" />
+
+        <action
+            android:id="@+id/action_uwaziScreen_to_uwaziSubmittedPreview"
+            app:destination="@id/uwaziSubmittedPreviewScreen" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/uwaziDownloadScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.download.DownloadedTemplatesFragment"
+        android:label="Uwazi"
+        tools:layout="@layout/fragment_downloaded_templates" />
+
+    <fragment
+        android:id="@+id/uwaziEntryScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.entry.UwaziEntryFragment"
+        android:label="Entry"
+        tools:layout="@layout/uwazi_entry_fragment">
+        <action
+            android:id="@+id/action_uwaziEntryScreen_to_uwaziSendScreen"
+            app:destination="@id/uwaziSendScreen">
+        </action>
+        <action
+            android:id="@+id/action_uwaziEntryScreen_to_uwaziSelectEntitiesScreen"
+            app:destination="@id/uwaziSelectEntitiesScreen" />
+    </fragment>
+    <dialog
+        android:id="@+id/uwaziSelectEntitiesScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.entry.UwaziSelectEntitiesFragment"
+        android:label="Select"
+        tools:layout="@layout/uwazi_select_entities_fragment">
+    </dialog>
+    <fragment
+        android:id="@+id/uwaziSendScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.send.UwaziSendFragment"
+        android:label="Send"
+        tools:layout="@layout/fragment_send_report" />
+
+    <fragment
+        android:id="@+id/uwaziSubmittedPreviewScreen"
+        android:name="org.horizontal.tella.mobile.views.fragment.uwazi.SubmittedPreviewFragment"
+        android:label="Send"
+        tools:layout="@layout/fragment_sumbitted_preview" />
+
+</navigation>
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="wa_red_light">#df4a32</color>
+    <color name="wa_black">#000000</color>
+    <color name="wa_white">#FFFFFF</color>
+    <color name="wa_gray">#98999B</color>
+    <color name="wa_button_gray">#bcbcbc</color>
+    <color name="wa_dark_gray">#525252</color>
+    <color name="wa_darker_gray">#1C1C1C</color>
+    <color name="wa_yellow">#feb900</color>
+    <color name="wa_shortcut_background">#88000000</color>
+    <color name="wa_gallery_gradient_start">#BB000000</color>
+    <color name="wa_gallery_gradient_end">#00000000</color>
+    <color name="wa_transparent">@android:color/transparent</color>
+    <color name="wa_map_fragment_background">#ECE9E0</color>
+    <color name="light_yellow">#ffe600</color>
+    <color name="dark_purple">#2C275A</color>
+    <color name="dark_orange">#D6933B</color>
+    <color name="wa_purple">#2C275A</color>
+    <color name="wa_purple_transparent">#002C275A</color>
+    <color name="wa_orange">#D6933B</color>
+    <color name="wa_orange_32">#52D6933B</color>
+    <color name="wa_orange_16">#29D6933B</color>
+    <color name="delimiter">#47426F</color>
+    <color name="onboardingIndicatorInactive">#DCDCDC</color>
+    <color name="onboardingIndicatorActive">#D6933B</color>
+    <color name="onboarding_indicator_inactive">#66FFFFFF</color>
+    <color name="onboarding_indicator_active">@color/wa_yellow</color>
+    <color name="btn_dark_letter">#FF071013</color>
+    <color name="nearby_sharing_hash_step2_bg">#66071013</color>
+
+    <color name="colorPrimary">@color/space_cadet</color>
+    <color name="colorPrimaryDark">@color/space_cadet</color>
+    <color name="colorAccent">@color/wa_white_80</color>
+    <color name="colorPrimaryInverse">@color/wa_white</color>
+    <color name="grayCFCFCF">#cfcfcf</color>
+    <color name="surfaceColor">#FFFFFF</color> <!-- Replace #FFFFFF with your desired color -->
+
+    <!-- Collect -->
+    <color name="primaryTextColor">#000000</color>
+</resources>

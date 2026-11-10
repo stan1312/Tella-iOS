@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="top"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="10dp">
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/Typography.Body2"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:paddingEnd="8dp"
+        android:textColor="@color/wa_white"
+        tools:ignore="RtlSymmetry"
+        tools:text="Manufacturer" />
+
+    <TextView
+        android:id="@+id/data"
+        style="@style/Typography.ButtonDetailRegular"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/wa_white_80"
+        tools:text="Samsung" />
+</LinearLayout>

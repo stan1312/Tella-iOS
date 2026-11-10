@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:textDirection="locale"
+    tools:context="org.horizontal.tella.mobile.views.fragment.forms.OutboxFormListFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/submittFormInstances"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <LinearLayout
+        android:id="@+id/blank_outbox_forms_info"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="top"
+        android:layout_marginTop="@dimen/activity_horizontal_larger_margin"
+        android:gravity="top"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            style="@style/ExplanatoryEmptyMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/Forms_NoOutboxForms"
+            android:src="@drawable/odk_empty_icon" />
+
+        <TextView
+            style="@style/ExplanatoryEmptyMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/Forms_NoOutboxForms" />
+    </LinearLayout>
+</RelativeLayout>

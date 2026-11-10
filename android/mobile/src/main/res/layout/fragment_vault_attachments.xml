@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
+    android:background="@color/space_cadet"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+ >
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/space_cadet"
+        android:fitsSystemWindows="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <org.hzontal.shared_ui.appbar.ToolbarComponent
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:arrowBackIconContentDescription="@string/action_go_back"
+            app:arrowBackIcon="@drawable/ic_arrow_back_white_24dp" />
+
+        <org.hzontal.shared_ui.breadcrumb.BreadcrumbsView
+            android:id="@+id/breadcrumbs_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="25dp"
+            android:paddingHorizontal="@dimen/tella_main_vertical"
+            app:crumbsPadding="5dp"
+            app:crumbsTextColor="@color/wa_white_92"
+            app:crumbsSelectedTextColor="@color/wa_white_92"
+            app:crumbsTextSize="13sp"
+            app:homeIcon="@drawable/ic_home_folder"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            android:visibility="gone"
+            />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/filesToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/tella_main_vertical"
+            android:paddingBottom="10dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/filterGroup"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_gravity="bottom"
+                android:clickable="true"
+                android:focusable="true"
+               >
+
+                <TextView
+                    android:id="@+id/filterNameTv"
+                    style="@style/Tella_Main_White_Text.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="bottom"
+                    android:text="@string/Vault_Filter_Name"
+                    android:textSize="13sp" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:id="@+id/filterNameImg"
+                    android:layout_toEndOf="@id/filterNameTv"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/ic_arrow_up_white"
+                    android:layout_alignBaseline="@id/filterNameTv" />
+            </LinearLayout>
+
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/checkBoxList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginHorizontal="@dimen/tella_main_vertical"
+                android:contentDescription="@string/action_select"
+                android:padding="5dp"
+                android:src="@drawable/ic_check"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/gridCheck"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/listCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="6dp"
+                android:src="@drawable/ic_list_check"
+                android:visibility="gone"
+                android:padding="6dp"
+                android:contentDescription="@string/action_display_list"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/gridCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/grid"
+                android:padding="6dp"
+                android:contentDescription="@string/action_display_gridView"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/attachmentsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        android:visibility="visible"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:spanCount="3"
+        tools:itemCount="9"
+        tools:listitem="@layout/item_vault_attachment_grid" />
+
+    <org.horizontal.tella.mobile.views.custom.TellaFloatingActionButton
+        android:id="@+id/fab_button"
+        style="@style/Main_Floating_Action_Button_Style"
+        android:contentDescription="@string/action_add"
+        app:fabIcon="@drawable/ic_plus"
+        app:layout_anchorGravity="center" />
+
+
+    <org.horizontal.tella.mobile.views.custom.TellaFloatingActionButton
+        android:id="@+id/fab_move_button"
+        style="@style/Move_Floating_Action_Button_Style"
+        android:layout_marginBottom="60dp"
+        android:layout_marginEnd="28dp"
+        android:contentDescription="@string/action_create_new_folder"
+        android:visibility="gone"
+        app:fabIcon="@drawable/ic_folder_plus"
+        app:layout_anchorGravity="center" />
+
+
+    <LinearLayout
+        android:id="@+id/emptyViewMsgContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="31dp"
+        android:layout_marginTop="30dp"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_files_illustration" />
+
+        <TextView
+            android:id="@+id/emptyViewTitle"
+            style="@style/Tella_Main_White_Text.MeduimbBold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:gravity="center"
+            android:textColor="@color/wa_white_88"
+            android:text="@string/Vault_No_Files_Title" />
+
+        <TextView
+            android:id="@+id/emptyViewDescription"
+            style="@style/Tella_Main_White_Text.Meduim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="@color/wa_white_88"
+            android:text="@string/Vault_Empty_Msg" />
+
+        <TextView
+            android:id="@+id/emptyViewFolderMsg"
+            style="@style/Tella_Main_White_Text.Meduim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:gravity="center"
+            android:textColor="@color/wa_white_88"
+            android:text="@string/Vault_Folder_Empty_Msg"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/moveContainer"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:background="@color/prussian_blue"
+        android:orientation="horizontal"
+        android:paddingHorizontal="31dp"
+        android:visibility="gone"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/cancelMove"
+            style="@style/Tella_Main_White_Text.Meduim"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/action_cancel"
+            android:textAllCaps="true" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/wa_white_12" />
+
+        <TextView
+            android:id="@+id/moveHere"
+            style="@style/Tella_Main_White_Text.Meduim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="1dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/Vault_MoveHere"
+            android:textAllCaps="true"
+            android:textColor="@color/wa_white_12" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="36" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <queries>
+        <package android:name="org.thoughtcrime.securesms" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND_MULTIPLE" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/tella_icon"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:localeConfig="@xml/locales_config"
+        android:networkSecurityConfig="@xml/configure_localhost_media_file_http_server"
+        android:roundIcon="@mipmap/tella_icon_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="false"
+        tools:ignore="GoogleAppIndexingWarning"
+        tools:replace="android:allowBackup,android:usesCleartextTraffic">
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <meta-data
+            android:name="firebase_analytics_collection_deactivated"
+            android:value="true" />
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_ssaid_collection_enabled"
+            android:value="false" />
+
+        <provider
+            android:name=".data.provider.EncryptedFileProvider"
+            android:authorities="${applicationId}.EncryptedFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/encrypted_file_paths" />
+        </provider>
+
+        <provider
+            android:name=".data.provider.ShareFileProvider"
+            android:authorities="${applicationId}.ShareFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/share_file_paths" />
+        </provider>
+
+        <activity
+            android:name=".views.activity.SplashActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="true"
+            android:icon="@mipmap/tella_icon_round"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculatorYellowSkin"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculator_yellow_skin"
+            android:label="@string/settings.camo_calculator2"
+            android:roundIcon="@mipmap/ic_calculator_yellow_skin_round"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculatorOrangeSkin"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculator_orange_skin"
+            android:label="@string/settings.camo_calculator2"
+            android:roundIcon="@mipmap/ic_calculator_orange_skin_round"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculatorBlueSkin"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculator_blue_skin"
+            android:label="@string/settings.camo_calculator2"
+            android:roundIcon="@mipmap/ic_calculator_blue_skin_round"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculator2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculator_round"
+            android:label="@string/settings.camo_calculator2"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculator"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/calculator_round"
+            android:label="@string/settings.camo_calculator2"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasStopWatch"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_stop_watch"
+            android:label="@string/settings.camo_stopwatch"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasWatch"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_watch"
+            android:label="@string/settings.camo_watch"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasWorkout"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_workout"
+            android:label="@string/settings.camo_workout"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasFitnessLife"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_fitness_life"
+            android:label="@string/settings.camo_fitness_life"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasHealth"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_health"
+            android:label="@string/settings.camo_health"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasPeriodTracker"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_period_tracker"
+            android:label="@string/settings.camo_period_tracker"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasMusic"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_music"
+            android:label="@string/settings.camo_music"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasTime"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_time"
+            android:label="@string/settings.camo_time"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasClock"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_clock"
+            android:label="@string/settings.camo_clock"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasJewelDash"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_jewel_dash"
+            android:label="@string/settings.camo_jeweldash"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasGameLauncher"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_game_launcher"
+            android:label="@string/settings.camo_game_launcher"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasPlayNow"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_play_now"
+            android:label="@string/settings.camo_playnow"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasGameStation"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_game_station"
+            android:label="@string/settings.camo_gamestation"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasSunnyDay"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_sunny_day"
+            android:label="@string/settings.camo_sunnyday"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasEasyWeather"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_easy_weather"
+            android:label="@string/settings.camo_easyweather"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasForecast"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_forecast"
+            android:label="@string/settings.camo_forecast"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasWeather"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_weather_round"
+            android:label="@string/settings.camo_weather"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasiCalculator"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_i_calculator"
+            android:label="@string/settings.camo_icalculator"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculatorPlus"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculator_plus"
+            android:label="@string/settings.camo_calculator_plus"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasCalculate"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_calculate"
+            android:label="@string/settings.camo_calculate"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasSnapCamera"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_snap_camera"
+            android:label="@string/settings.camo_snap_camera"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasMiCamera"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_mi_camera"
+            android:label="@string/settings.camo_micamera"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasSelfieCam"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_selfie_cam"
+            android:label="@string/settings.camo_selfie_cam"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasiCamera"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_camera"
+            android:label="@string/settings.camo_icamera"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasDictionary"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_dictionary"
+            android:label="@string/settings.camo_dictionary"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasPlantCare"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_plant_care"
+            android:label="@string/settings.camo_plant_care"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="org.horizontal.tella.mobile.views.activity.AliasAstrology"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_astrology"
+            android:label="@string/settings.camo_astrology"
+            android:targetActivity="org.horizontal.tella.mobile.views.activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name=".views.activity.MainActivity"
+            android:launchMode="singleTop"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.SettingsActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:label="@string/settings_app.bar"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="open.settings.activity"
+                    android:scheme="tella_scheme" />
+            </intent-filter>
+            <nav-graph android:value="@navigation/settings_navigation" />
+        </activity>
+
+        <activity
+            android:name=".views.activity.PatternUpgradeActivity"
+            android:label="@string/title_activity_security"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.ServersSettingsActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="true"
+            android:label="@string/settings.servers.title_server.settings"
+            android:parentActivityName=".views.activity.SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.horizontal.tella.mobile.views.activity.SettingsActivity" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="open.collect.manage.servers.activity"
+                    android:scheme="tella_scheme" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".views.activity.CollectFormEntryActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".views.activity.QuestionAttachmentActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="@string/collect.form_select.attachment_app.bar"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.MetadataViewerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="@string/verification.info_app.bar"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.viewer.PhotoViewerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/PhotoViewerTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.viewer.AudioPlayActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="@string/play.audio_app.bar"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.viewer.VideoViewerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTop"
+            android:theme="@style/PlayerTheme" />
+        <activity
+            android:name=".views.activity.camera.CameraActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@style/CameraTheme" />
+        <activity
+            android:name=".views.fragment.recorder.MicActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.ExitActivity"
+            android:autoRemoveFromRecents="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            tools:targetApi="lollipop" />
+        <activity
+            android:name=".views.activity.LocationMapActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="@string/title_activity_location_map"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.SignatureActivity"
+            android:label="@string/signature"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.FormSubmitActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.fragment.uwazi.attachments.AttachmentsActivitySelector"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.onboarding.OnBoardingActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.LockUpdateSuccessActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.settings.SettingsCalculatorActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.viewer.PDFReaderActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.activity.analytics.AnalyticsIntroActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.dialog.uwazi.UwaziConnectFlowActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.dialog.googledrive.GoogleDriveConnectFlowActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.dialog.dropbox.DropBoxConnectFlowActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.dialog.reports.ReportsConnectFlowActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".views.dialog.nextcloud.NextCloudLoginFlowActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            android:multiprocess="true"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <activity
+            android:name="com.dropbox.core.android.AuthActivity"
+            android:configChanges="orientation|keyboard"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <data android:scheme="db-${dropboxKey}" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".views.fragment.peertopeer.activity.PeerToPeerActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+
+    </application>
+
+</manifest>

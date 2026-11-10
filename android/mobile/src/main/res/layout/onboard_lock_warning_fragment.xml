@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/wa_purple"
+    tools:context=".views.activity.onboarding.OnBoardLockWarningFragment">
+
+    <ImageView
+        android:id="@+id/warningIcon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_warning_orange"
+        app:layout_constraintBottom_toTopOf="@+id/warningTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/warningTitle"
+        style="@style/Typography.Heading1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_large_margin"
+        android:fontFamily="@font/open_sans"
+        android:gravity="center"
+        android:paddingStart="@dimen/activity_horizontal_large_margin"
+        android:paddingEnd="@dimen/activity_horizontal_large_margin"
+        android:text="@string/onboard_lock_warning_title"
+        android:textColor="@color/wa_white"
+        app:layout_constraintBottom_toTopOf="@+id/warningMessageContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/warningIcon" />
+
+    <LinearLayout
+        android:id="@+id/warningMessageContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="26dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/understandBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/warningTitle">
+
+        <TextView
+            android:id="@+id/warningMessage"
+            style="@style/Typography.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/onboard_lock_warning_message"
+            android:textColor="@color/wa_white_88" />
+
+        <TextView
+            android:id="@+id/warningMessageRecover"
+            style="@style/Typography.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="21dp"
+            android:gravity="center"
+            android:text="@string/onboard_lock_warning_message_recover"
+            android:textColor="@color/wa_white_88" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/understandBtn"
+        style="@style/OnboardingGetStarted"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/round_button_selector"
+        android:text="@string/onboard_lock_warning_cta"
+        app:layout_constraintBottom_toTopOf="@+id/backBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/warningMessageContainer" />
+
+    <TextView
+        android:id="@+id/backBtn"
+        style="@style/Onboarding_BottomNavButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/LockSelect_Action_Back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

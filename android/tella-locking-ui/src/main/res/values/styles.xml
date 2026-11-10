@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="Base.PatternView" parent="">
+        <item name="pl_rowCount">3</item>
+        <item name="pl_columnCount">3</item>
+        <item name="pl_aspect">square</item>
+    </style>
+
+    <style name="PatternView" parent="Base.PatternView">
+        <item name="pl_regularColor">@color/wa_white</item>
+        <item name="pl_errorColor">@color/light_red</item>
+        <item name="pl_successColor">@color/tigers_eye</item>
+    </style>
+
+    <style name="Unlock_White_Text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/wa_white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:fontFamily">@font/open_sans</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="Unlock_Black_Text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/wa_white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:fontFamily">@font/open_sans</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="Unlock_White_Text_Bold" parent="Unlock_White_Text">
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">20dp</item>
+    </style>
+
+    <style name="Unlock_White_Text_Medium" parent="Unlock_White_Text">
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Unlock_White_Text_Next" parent="Unlock_White_Text">
+        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:layout_marginEnd">34dp</item>
+        <item name="android:textColor">@color/wa_white_40</item>
+    </style>
+
+    <style name="Unlock_White_Text_Back" parent="Unlock_White_Text">
+        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:layout_marginStart">34dp</item>
+    </style>
+
+    <style name="Password_EditText" parent="Style_EditText">
+        <item name="android:inputType">textPassword</item>
+    </style>
+
+    <style name="Calculator_Text">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:gravity">end</item>
+        <item name="android:focusable">true</item>
+        <item name="android:fontFamily">@font/open_sans</item>
+    </style>
+
+    <style name="Calculator_Edit_Text" parent="Calculator_Text">
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:inputType">text</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/wa_black</item>
+    </style>
+
+    <style name="Calculator_Edit_Text_Blue_Skin" parent="Calculator_Edit_Text">
+        <item name="android:textSize">56sp</item>
+        <item name="android:textColor">@color/wa_white_92</item>
+    </style>
+    <style name="Calculator_Result_Text_Orange_Skin" parent="Calculator_Result_Text">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/wa_black</item>
+    </style>
+
+    <style name="Calculator_Edit_Text_Orange_Skin" parent="Calculator_Edit_Text">
+        <item name="android:textSize">48sp</item>
+        <item name="android:textColor">@color/calc_orange_skin_black</item>
+    </style>
+    <style name="Calculator_Result_Text_Blue_Skin" parent="Calculator_Result_Text">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/wa_white_92</item>
+    </style>
+
+    <style name="Calculator_Result_Text" parent="Calculator_Text">
+        <item name="android:textSize">60sp</item>
+        <item name="android:inputType">text</item>
+        <item name="android:textColor">@color/wa_dark_green</item>
+    </style>
+
+
+</resources>

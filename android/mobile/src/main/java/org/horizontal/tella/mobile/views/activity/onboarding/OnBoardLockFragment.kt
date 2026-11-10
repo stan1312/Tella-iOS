@@ -1,0 +1,101 @@
+package org.horizontal.tella.mobile.views.activity.onboarding
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import com.hzontal.tella_locking_ui.IS_FROM_SETTINGS
+import org.horizontal.tella.mobile.R
+import org.hzontal.shared_ui.buttons.InformationButton
+import org.horizontal.tella.mobile.views.base_ui.BaseFragment
+
+class OnBoardLockFragment : BaseFragment() {
+    private lateinit var lockPasswordBtn: InformationButton
+    private lateinit var lockPINdBtn: InformationButton
+    private lateinit var lockPatternBtn: InformationButton
+    private var isFromSettings = false
+    private lateinit var cancelBtn : TextView
+    companion object {
+        // Use this function to create instance of current fragment
+        fun newInstance(isFromSettings : Boolean): OnBoardLockFragment {
+            val args = Bundle()
+            args.putBoolean(IS_FROM_SETTINGS, isFromSettings)
+            val fragment = OnBoardLockFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.onboard_lock_fragment, container, false)
+    }
+
+    override fun applyEdgeToEdgeIfNeeded(view: View) {
+        if (arguments?.getBoolean(IS_FROM_SETTINGS, false) == true) {
+            OnboardingInsets.applyFullscreenOverlay(view, baseActivity)
+        } else {
+            OnboardingInsets.applyCarouselSlide(view)
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initView(view)
+    }
+
+    override fun initView(view: View) {
+        arguments?.let { isFromSettings=  it.getBoolean(IS_FROM_SETTINGS,false) }
+        lockPasswordBtn = view.findViewById(R.id.lockPasswordBtn)
+        lockPINdBtn = view.findViewById(R.id.lockPINdBtn)
+        lockPatternBtn = view.findViewById(R.id.lockPatternBtn)
+        cancelBtn = view.findViewById(R.id.cancelBtn)
+        if (isFromSettings) {
+            (baseActivity as OnBoardingActivity).hideViewpager()
+        }
+        initListeners()
+    }
+
+    private fun initListeners() {
+
+        lockPasswordBtn.setOnClickListener {
+            toggleButtons(passwordState = true, pinState = false, patternState = false)
+            proceedWithSelection(OnBoardLockWarningFragment.LockType.PASSWORD)
+        }
+        lockPINdBtn.setOnClickListener {
+            toggleButtons(passwordState = false, pinState = true, patternState = false)
+            proceedWithSelection(OnBoardLockWarningFragment.LockType.PIN)
+        }
+        lockPatternBtn.setOnClickListener {
+            toggleButtons(passwordState = false, pinState = false, patternState = true)
+            proceedWithSelection(OnBoardLockWarningFragment.LockType.PATTERN)
+        }
+
+        cancelBtn.setOnClickListener {
+            baseActivity.onBackPressed()
+        }
+    }
+
+    private fun toggleButtons(passwordState: Boolean, pinState: Boolean, patternState: Boolean) {
+        lockPasswordBtn.isChecked = passwordState
+        lockPINdBtn.isChecked = pinState
+        lockPatternBtn.isChecked = patternState
+    }
+
+    /**
+     * Always show the warning fragment first (onboarding and settings). After the user taps "I understand",
+     * OnBoardLockWarningFragment proceeds to set or update the lock type.
+     */
+    private fun proceedWithSelection(lockType: OnBoardLockWarningFragment.LockType) {
+        if (!isFromSettings) (baseActivity as OnBoardingActivity).hideViewpager()
+        baseActivity.addFragmentWithoutPopAnimation(
+            this,
+            OnBoardLockWarningFragment.newInstance(lockType, isFromSettings),
+            R.id.rootOnboard
+        )
+    }
+}

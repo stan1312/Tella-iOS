@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/move_drag_anchor_drawable"
+        android:padding="24dp"
+        >
+
+        <TextView
+            android:id="@+id/standard_sheet_title"
+            style="@style/Tella_Main_White_Text.MeduimbBold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/renameEditText"
+            android:text="@string/Rename_name_Hint"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Rename File" />
+
+        <EditText
+            android:id="@+id/renameEditText"
+            style="@style/Style_EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="0dp"
+            android:autofillHints=""
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="start"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:paddingHorizontal="0dp"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/standard_sheet_title"
+            tools:text="Testtt" />
+
+        <TextView
+            android:id="@+id/standard_sheet_cancel_btn"
+            style="@style/Tella_Main_White_Text.MeduimbBold"
+            android:layout_marginEnd="30dp"
+            app:layout_constraintEnd_toStartOf="@id/standard_sheet_confirm_btn"
+            app:layout_constraintTop_toBottomOf="@id/renameEditText" />
+
+        <TextView
+            android:id="@+id/standard_sheet_confirm_btn"
+            style="@style/Tella_Main_White_Text.MeduimbBold"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/renameEditText" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

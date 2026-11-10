@@ -1,0 +1,94 @@
+package org.horizontal.tella.mobile.views.fragment.uwazi
+
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.viewModels
+import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
+import org.hzontal.shared_ui.bottomsheet.BottomSheetUtils
+import org.hzontal.shared_ui.utils.DialogUtils
+import org.horizontal.tella.mobile.R
+import org.horizontal.tella.mobile.databinding.FragmentSumbittedPreviewBinding
+import org.horizontal.tella.mobile.domain.entity.uwazi.UwaziEntityInstance
+import org.horizontal.tella.mobile.views.base_ui.BaseBindingFragment
+import org.horizontal.tella.mobile.views.fragment.uwazi.send.SEND_ENTITY
+import org.horizontal.tella.mobile.views.fragment.uwazi.widgets.UwaziFormEndView
+
+@AndroidEntryPoint
+class SubmittedPreviewFragment : BaseBindingFragment<FragmentSumbittedPreviewBinding>(
+    FragmentSumbittedPreviewBinding::inflate
+) {
+    private val viewModel: UwaziViewModel by viewModels()
+    private lateinit var endView: UwaziFormEndView
+    private var submittedInstance: UwaziEntityInstance? = null
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initView()
+        initObservers()
+    }
+
+    private fun initObservers() {
+        with(viewModel) {
+            instanceDeleted.observe(viewLifecycleOwner) { deletedTitle ->
+                deletedTitle?.let { title ->
+                    DialogUtils.showBottomMessage(
+                        requireActivity(),
+                        getString(R.string.Uwazi_Entity_Deleted_Toast, title),
+                        false
+                    )
+                    nav().popBackStack()
+                }
+            }
+        }
+    }
+
+    private fun showDeleteBottomSheet(entityInstance: UwaziEntityInstance) {
+        BottomSheetUtils.showConfirmSheet(
+            baseActivity.supportFragmentManager,
+            getString(R.string.Uwazi_DeleteEntity_SheetTitle),
+            getString(R.string.Uwazi_Subtitle_RemoveSubmittedEntity),
+            getString(R.string.action_delete),
+            getString(R.string.action_cancel),
+            object : BottomSheetUtils.ActionConfirmed {
+                override fun accept(isConfirmed: Boolean) {
+                    if (isConfirmed) {
+                        viewModel.deleteReport(entityInstance)
+                    }
+                }
+            }
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.listSubmitted()
+    }
+
+
+    fun initView() {
+        arguments?.get(SEND_ENTITY)?.let { entity ->
+            submittedInstance = Gson().fromJson(entity as String, UwaziEntityInstance::class.java)
+            submittedInstance?.let {
+                endView = UwaziFormEndView(baseActivity, getFormattedFormTitle(submittedInstance!!))
+
+                endView.setInstance(it, true, true)
+                binding.endViewContainer.removeAllViews()
+                binding.endViewContainer.addView(endView)
+            }
+
+        }
+        binding.toolbar.onRightClickListener =
+            { submittedInstance?.let { showDeleteBottomSheet(it) } }
+        binding.toolbar.backClickListener = {
+            nav().popBackStack()
+        }
+    }
+
+    private fun getFormattedFormTitle(entityInstance: UwaziEntityInstance): String {
+        return getString(R.string.Uwazi_Server_Title) + " " + entityInstance.collectTemplate?.serverName + "\n" + getString(
+            R.string.Uwazi_Template_Title
+        ) + " " + entityInstance.collectTemplate?.entityRow?.translatedName
+    }
+}

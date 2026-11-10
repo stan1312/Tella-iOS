@@ -1,0 +1,216 @@
+package com.hzontal.tella_locking_ui.common
+
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import com.hzontal.tella_locking_ui.FINISH_ACTIVITY_REQUEST_CODE
+import com.hzontal.tella_locking_ui.IS_CAMOUFLAGE
+import com.hzontal.tella_locking_ui.IS_FROM_SETTINGS
+import com.hzontal.tella_locking_ui.IS_ONBOARD_LOCK_SET
+import com.hzontal.tella_locking_ui.ONBOARDING_LOCK_PROTECT_SHEET_TAG
+import com.hzontal.tella_locking_ui.R
+import com.hzontal.tella_locking_ui.RETURN_ACTIVITY
+import com.hzontal.tella_locking_ui.ReturnActivity
+import com.hzontal.tella_locking_ui.TellaKeysUI
+import org.hzontal.shared_ui.utils.ScreenSecurity
+import org.hzontal.tella.keys.config.UnlockConfig
+import org.hzontal.tella.keys.config.UnlockRegistry
+import org.hzontal.tella.keys.key.LifecycleMainKey
+import org.hzontal.tella.keys.key.MainKey
+import timber.log.Timber
+
+open class BaseActivity : AppCompatActivity() {
+    protected val isFromSettings by lazy { intent.getBooleanExtra(IS_FROM_SETTINGS, false) }
+    protected val returnActivity by lazy { intent.getIntExtra(RETURN_ACTIVITY, 0) }
+    private var isConfirmSettingsUpdate: Boolean = false
+    private val onboardingProtectSheetLock = Any()
+    private var isOnboardingProtectSheetShowing: Boolean = false
+    private var onboardingSheetDismissCallback: FragmentManager.FragmentLifecycleCallbacks? = null
+    protected val config: UnlockConfig by lazy {
+        TellaKeysUI.getUnlockRegistry().getActiveConfig(this)
+    }
+    protected val registry: UnlockRegistry by lazy { TellaKeysUI.getUnlockRegistry() }
+
+
+    private val dialogScreenSecurityCallbacks =
+        object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentViewCreated(
+                fm: FragmentManager,
+                f: Fragment,
+                v: View,
+                savedInstanceState: Bundle?
+            ) {
+                applyScreenSecurityIfDialog(f)
+            }
+
+            override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+                applyScreenSecurityIfDialog(f)
+            }
+        }
+
+    private fun applyScreenSecurityIfDialog(fragment: Fragment) {
+        (fragment as? DialogFragment)?.dialog?.let {
+            ScreenSecurity.applyToDialog(it, this)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.d("** %s: %s **", javaClass, "onCreate()")
+        super.onCreate(savedInstanceState)
+        // Dialogs/bottom sheets live in their own windows; apply screen security to each.
+        supportFragmentManager.registerFragmentLifecycleCallbacks(dialogScreenSecurityCallbacks, true)
+        WindowCompat.enableEdgeToEdge(window)
+        overridePendingTransition(R.anim.`in`, R.anim.out)
+    }
+
+    fun applyEdgeToEdge(view: View) {
+        // Window already configured by enableEdgeToEdge() in onCreate. Apply insets so content is not drawn under system bars.
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
+        }
+    }
+
+    override fun onResume() {
+        Timber.d("** %s: %s **", javaClass, "onResume()")
+        ScreenSecurity.applyToWindow(window, this)
+        super.onResume()
+    }
+
+    override fun onPause() {
+        Timber.d("** %s: %s **", javaClass, "onPause()")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Timber.d("** %s: %s **", javaClass, "onStop()")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        Timber.d("** %s: %s **", javaClass, "onDestroy()")
+        onboardingSheetDismissCallback?.let {
+            supportFragmentManager.unregisterFragmentLifecycleCallbacks(it)
+            onboardingSheetDismissCallback = null
+        }
+        isOnboardingProtectSheetShowing = false
+        super.onDestroy()
+    }
+
+    protected fun launchConfirmActivity(intent: Intent) {
+        intent.putExtra(IS_FROM_SETTINGS, isFromSettings)
+        if (isFromSettings) {
+            startActivityForResult(intent, FINISH_ACTIVITY_REQUEST_CODE)
+        } else {
+            startActivity(intent)
+            finish()
+        }
+        overridePendingTransition(R.anim.`in`, R.anim.out)
+    }
+
+    protected fun onSuccessfulUnlock() {
+        when (returnActivity) {
+            ReturnActivity.SETTINGS.getActivityOrder() -> {
+                val intent = Intent(this, Class.forName(ReturnActivity.SETTINGS.activityName))
+                intent.putExtra(IS_FROM_SETTINGS, true)
+                startActivity(intent)
+            }
+
+            ReturnActivity.CAMOUFLAGE.getActivityOrder() -> {
+                val intent = Intent(this, Class.forName(ReturnActivity.CAMOUFLAGE.activityName))
+                intent.putExtra(IS_CAMOUFLAGE, true)
+                startActivity(intent)
+            }
+
+            else -> {
+                TellaKeysUI.getCredentialsCallback().onSuccessfulUnlock(this)
+            }
+        }
+    }
+
+    protected fun onSuccessConfirmUnlock() {
+        if (isConfirmSettingsUpdate && isFromSettings) {
+            TellaKeysUI.getCredentialsCallback().onUpdateUnlocking()
+            TellaKeysUI.getCredentialsCallback().onLockUpdateSuccess(this)
+            setResult(RESULT_OK)
+            finish()
+        } else {
+            val intent = Intent(this, Class.forName(ReturnActivity.SETTINGS.activityName))
+            intent.putExtra(IS_ONBOARD_LOCK_SET, true)
+            startActivity(intent)
+            finishAffinity()
+        }
+    }
+
+    protected fun showOnboardingProtectSheet(onContinue: () -> Unit) {
+        synchronized(onboardingProtectSheetLock) {
+            if (isOnboardingProtectSheetShowing) return
+            isOnboardingProtectSheetShowing = true
+        }
+        registerOnboardingProtectSheetDismissListener()
+        runOnUiThread {
+            if (isFinishing || isDestroyed) {
+                synchronized(onboardingProtectSheetLock) {
+                    isOnboardingProtectSheetShowing = false
+                }
+                return@runOnUiThread
+            }
+            TellaKeysUI.getCredentialsCallback().onOnboardingLockSetupComplete(this) {
+                synchronized(onboardingProtectSheetLock) {
+                    isOnboardingProtectSheetShowing = false
+                }
+                onContinue()
+            }
+        }
+    }
+
+    protected open fun onOnboardingProtectSheetClosed() {}
+
+    private fun registerOnboardingProtectSheetDismissListener() {
+        onboardingSheetDismissCallback?.let {
+            supportFragmentManager.unregisterFragmentLifecycleCallbacks(it)
+        }
+        onboardingSheetDismissCallback = object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+                if (f.tag != ONBOARDING_LOCK_PROTECT_SHEET_TAG) return
+                synchronized(onboardingProtectSheetLock) {
+                    isOnboardingProtectSheetShowing = false
+                }
+                onOnboardingProtectSheetClosed()
+                fm.unregisterFragmentLifecycleCallbacks(this)
+                onboardingSheetDismissCallback = null
+            }
+        }
+        supportFragmentManager.registerFragmentLifecycleCallbacks(
+            onboardingSheetDismissCallback!!,
+            false
+        )
+    }
+
+    /**
+     * @return null if the in-memory key was cleared while a new lock was being confirmed; full-app unlock was started.
+     */
+    protected fun generateOrGetMainKey(): MainKey? {
+        return if (TellaKeysUI.getMainKeyStore().isStored) {
+            isConfirmSettingsUpdate = true
+            val holder = TellaKeysUI.getMainKeyHolder()
+            return try {
+                holder.get()
+            } catch (e: LifecycleMainKey.MainKeyUnavailableException) {
+                TellaKeysUI.getCredentialsCallback().launchFullAppUnlock(this)
+                null
+            }
+        } else {
+            MainKey.generate()
+        }
+    }
+
+}
