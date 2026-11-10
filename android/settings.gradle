@@ -25,3 +25,5 @@ include ':tella-locking-ui'
 include ':shared-ui'
 include ':pdfviewer'
 include ':tella-database'
+// SPECTRE Capture: deposit core (pure Kotlin/JVM, tested without the Android SDK)
+include ':spectre-core'

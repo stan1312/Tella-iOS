@@ -242,6 +242,8 @@ public class MyApplication extends MultiDexApplication implements IUnlockRegistr
         insertConscrypt();
         enableStrictMode();
         setupBouncyCastleProvider();
+        // SPECTRE Capture: deposit queue (no-op outside the "spectre" flavor)
+        org.horizontal.tella.mobile.spectre.SpectreDeposit.init(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -287,6 +289,8 @@ public class MyApplication extends MultiDexApplication implements IUnlockRegistr
             vault = new Vault(this, mainKeyHolder, vaultConfig);
             keyDataSource.initKeyDataSource();
             keyRxVault.initKeyRxVault();
+            // SPECTRE Capture: build pending outboxes now that the vault is readable
+            org.horizontal.tella.mobile.spectre.SpectreDeposit.onVaultUnlocked();
             if (Preferences.isUpgradeTella2()) {
                 Toast.makeText(context, "Hold tight while we transferring your files to the Vault!", Toast.LENGTH_LONG).show();
                 upgradeTella2(context);

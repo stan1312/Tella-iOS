@@ -12,7 +12,7 @@ plugins {
 // Before F-Droid release: inspect fdroidRelease APK for absence of com/google/firebase,
 // com/google/android/gms, and Dropbox classes (e.g. unzip and grep or use apkanalyzer).
 def isFdroidBuild = project.hasProperty('fdroid') ||
-    gradle.startParameter.taskNames.any { it.toLowerCase().contains("fdroid") }
+    gradle.startParameter.taskNames.any { it.toLowerCase().contains("fdroid") || it.toLowerCase().contains("spectre") }
 if (!isFdroidBuild) {
     apply plugin: 'com.google.firebase.crashlytics'
     apply plugin: 'com.google.gms.google-services'
@@ -32,6 +32,8 @@ configurations.all {
         force "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.7.3"
     }
 }
+
+def spectreKeystore = project.findProperty("SPECTRE_KEYSTORE") ?: System.getenv("SPECTRE_KEYSTORE")
 
 android {
     namespace 'org.horizontal.tella.mobile'
@@ -83,6 +85,8 @@ android {
         }
         buildConfigField "String", "DROPBOX_APP_KEY", "\"${dropboxKey}\""
         manifestPlaceholders = [dropboxKey: dropboxKey]
+        // SPECTRE Capture: deposit features are compiled in every flavor but only switched on in "spectre".
+        buildConfigField "boolean", "SPECTRE_ENABLED", "false"
     }
 
     splits {
@@ -124,6 +128,21 @@ android {
             buildConfigField "boolean", "ENABLE_CRASHLYTICS", "false"
             buildConfigField "boolean", "ENABLE_GOOGLE_MAPS", "false"
         }
+        // SPECTRE Capture: F-Droid code base (no Firebase, no Google/Dropbox SDK, no crash reporting)
+        // + deposit to the owner's Google Drive through the Apps Script deposit service.
+        // Distributed as a signed APK installed outside the Play Store.
+        spectre {
+            dimension "distribution"
+            applicationId(project.findProperty("SPECTRE_APPLICATION_ID") ?: System.getenv("SPECTRE_APPLICATION_ID") ?: "org.spectre.capture")
+            minSdk 26
+            versionCode((project.findProperty("SPECTRE_VERSION_CODE") ?: System.getenv("SPECTRE_VERSION_CODE") ?: "1") as Integer)
+            versionName "0.1.0-spectre"
+            buildConfigField "boolean", "ENABLE_GOOGLE_DRIVE", "false"
+            buildConfigField "boolean", "ENABLE_DROPBOX", "false"
+            buildConfigField "boolean", "ENABLE_CRASHLYTICS", "false"
+            buildConfigField "boolean", "ENABLE_GOOGLE_MAPS", "false"
+            buildConfigField "boolean", "SPECTRE_ENABLED", "true"
+        }
     }
 
     sourceSets {
@@ -132,9 +151,30 @@ android {
                 exclude "config.json"
             }
         }
+        spectre {
+            // Same stubs as F-Droid for the Google Drive / Dropbox connectors of Tella (not used by SPECTRE).
+            java.srcDirs += ['src/fdroid/java']
+            assets {
+                exclude "config.json"
+            }
+        }
     }
 
     signingConfigs {
+        // SPECTRE release key: PKCS#12 keystore kept by the owner (never committed). CI receives it
+        // base64-encoded in the SPECTRE_KEYSTORE_B64 secret; see docs/ANDROID_APK.md.
+        spectre {
+            if (spectreKeystore != null) {
+                storeFile file(spectreKeystore)
+                storeType "pkcs12"
+                storePassword(project.findProperty("SPECTRE_KEYSTORE_PASSWORD") ?: System.getenv("SPECTRE_KEYSTORE_PASSWORD"))
+                keyAlias(project.findProperty("SPECTRE_KEY_ALIAS") ?: System.getenv("SPECTRE_KEY_ALIAS") ?: "spectre")
+                keyPassword(project.findProperty("SPECTRE_KEYSTORE_PASSWORD") ?: System.getenv("SPECTRE_KEYSTORE_PASSWORD"))
+                enableV1Signing false
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
         release {
             def storeFileEnv = project.findProperty("RELEASE_STORE_FILE") ?: System.getenv("RELEASE_STORE_FILE")
             if (storeFileEnv != null) {
@@ -144,6 +184,10 @@ android {
                 keyPassword project.findProperty("RELEASE_KEY_PASSWORD") ?: System.getenv("RELEASE_KEY_PASSWORD")
             }
         }
+    }
+
+    if (spectreKeystore != null) {
+        productFlavors.spectre.signingConfig = signingConfigs.spectre
     }
 
     buildTypes {
@@ -232,6 +276,7 @@ dependencies {
     implementation project(':pdfviewer')
     api project(':tella-locking-ui')
     implementation project(':tella-database')
+    implementation project(':spectre-core')
 
     implementation "androidx.lifecycle:lifecycle-extensions:$versions.lifecycleExtensions"
 

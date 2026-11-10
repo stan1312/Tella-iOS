@@ -469,3 +469,7 @@
 
 -keep class org.bouncycastle.** { *; }
 -dontwarn org.bouncycastle.**
+# ========== SPECTRE Capture ==========
+# spectre-core persists its records / credentials with Gson (reflection on field names).
+-keep class org.spectre.capture.core.** { *; }
+-keep class org.horizontal.tella.mobile.spectre.** { *; }

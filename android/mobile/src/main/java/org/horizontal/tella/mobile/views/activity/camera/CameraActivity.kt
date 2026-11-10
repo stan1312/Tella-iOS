@@ -54,6 +54,7 @@ import com.hzontal.tella_vault.VaultFile
 import com.hzontal.tella_vault.filter.FilterType
 import com.hzontal.utils.MediaFile
 import dagger.hilt.android.AndroidEntryPoint
+import org.horizontal.tella.mobile.BuildConfig
 import org.horizontal.tella.mobile.MyApplication
 import org.horizontal.tella.mobile.R
 import org.horizontal.tella.mobile.bus.event.CaptureEvent
@@ -105,7 +106,8 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
     private lateinit var videoModeText: TextView
     private lateinit var resolutionButton: CameraResolutionButton
     private var metadataAttacher: MetadataAttacher? = null
-    private var mode = CameraMode.PHOTO
+    // SPECTRE Capture opens in video mode (videos are deposited; photos stay in the vault).
+    private var mode = if (BuildConfig.SPECTRE_ENABLED) CameraMode.VIDEO else CameraMode.PHOTO
     private var modeLocked = false
     private var intentMode: IntentMode? = null
     private var videoRecording = false
@@ -354,6 +356,11 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
         }
         if (shouldScheduleAutoUpload()) {
             capturedMediaFile?.let { vaultFile -> scheduleFileUpload(vaultFile) }
+        }
+        // SPECTRE Capture: every video recorded from the camera tab goes to the deposit
+        // (not form / report attachments, which must stay in the vault).
+        if (BuildConfig.SPECTRE_ENABLED && intentMode != IntentMode.COLLECT && intentMode != IntentMode.ODK) {
+            org.horizontal.tella.mobile.spectre.SpectreDeposit.handleNewCapture(file)
         }
         MyApplication.bus().post(CaptureEvent())
     }

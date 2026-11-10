@@ -70,6 +70,7 @@ class EncryptedOutbox(val directory: File, private val secrets: SecretStore, val
     fun importStream(input: InputStream, total: Long, captureId: String): FileFingerprint {
         if (!Validation.isUUID(captureId)) throw SpectreException.InvalidCaptureId()
         if (total < 0) throw SpectreException.OutboxCorrupted()
+        directory.mkdirs()   // may have been wiped (quick delete)
         val key = SpectreCrypto.randomBytes(32)
         secrets.set(SecretKeys.outboxKey(captureId), key)
         val out = containerFile(captureId)

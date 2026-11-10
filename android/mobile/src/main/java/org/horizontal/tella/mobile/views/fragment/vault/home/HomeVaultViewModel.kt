@@ -96,6 +96,8 @@ class HomeVaultViewModel @Inject constructor(
                 if (Preferences.isDeleteGalleryEnabled()) {
                     rxVault.destroy().blockingAwait()
                     MediaFileHandler.destroyGallery(appContext)
+                    // SPECTRE Capture: also crypto-erase recordings waiting to be deposited
+                    org.horizontal.tella.mobile.spectre.SpectreDeposit.wipeQueuedCaptures()
                 }
 
                 if (Preferences.isDeleteServerSettingsActive()) {

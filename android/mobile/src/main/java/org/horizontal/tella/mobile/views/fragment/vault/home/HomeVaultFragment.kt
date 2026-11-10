@@ -161,6 +161,8 @@ class HomeVaultFragment : BaseFragment(), VaultClickListener {
         initPermissions()
         fixAppBarShadow(binding.root)
         showUpdateMigrationBottomSheet()
+        // SPECTRE Capture: deposit card + camera / dictaphone tiles (spectre flavor only)
+        org.horizontal.tella.mobile.spectre.SpectreHomeView.attach(this, binding.spectreHomeContainer)
     }
 
     private fun initObservers() {
@@ -597,6 +599,7 @@ class HomeVaultFragment : BaseFragment(), VaultClickListener {
         maybeGetRecentTemplates()
         updateToolbarIcon()
         scrollHomeToTop()
+        org.horizontal.tella.mobile.spectre.SpectreDeposit.onVaultUnlocked()
     }
 
     private fun scrollHomeToTop() {

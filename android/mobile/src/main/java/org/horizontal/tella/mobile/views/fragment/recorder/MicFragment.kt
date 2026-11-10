@@ -24,6 +24,7 @@ import com.hzontal.tella_vault.filter.FilterType
 import dagger.hilt.android.AndroidEntryPoint
 import org.hzontal.shared_ui.bottomsheet.BottomSheetUtils
 import org.hzontal.shared_ui.utils.DialogUtils
+import org.horizontal.tella.mobile.BuildConfig
 import org.horizontal.tella.mobile.R
 import org.horizontal.tella.mobile.data.sharedpref.Preferences
 import org.horizontal.tella.mobile.media.MediaFileHandler
@@ -410,6 +411,10 @@ class MicFragment : MetadataBaseLockFragment(),
             onMetadataAttached(vaultFile)
         }
         scheduleFileUpload(vaultFile)
+        // SPECTRE Capture: dictaphone recordings go to the deposit (not form / report attachments).
+        if (BuildConfig.SPECTRE_ENABLED && !isCollect && !isReport) {
+            org.horizontal.tella.mobile.spectre.SpectreDeposit.handleNewCapture(vaultFile)
+        }
     }
 
     private fun onAddError(error: Throwable?) {

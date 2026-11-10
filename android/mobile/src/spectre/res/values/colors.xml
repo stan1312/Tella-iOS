@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPECTRE Capture: minimal black & white look (same direction as the iOS app).
+     Overrides Tella's purple / orange palette by name; red is kept for errors only. -->
+<resources>
+    <color name="space_cadet">#000000</color>
+    <color name="light_space_cadet">#111111</color>
+    <color name="dark_purple">#000000</color>
+    <color name="wa_purple">#000000</color>
+    <color name="wa_purple_transparent">#00000000</color>
+    <color name="light_purple">#1A1A1A</color>
+    <color name="delimiter">#333333</color>
+    <color name="tigers_eye">#FFFFFF</color>
+    <color name="tigers_eye_pressed">#66FFFFFF</color>
+    <color name="tigers_eye_dark">#BBBBBB</color>
+    <color name="tigers_eye_70">#B3FFFFFF</color>
+    <color name="wa_orange">#FFFFFF</color>
+    <color name="wa_orange_32">#52FFFFFF</color>
+    <color name="wa_orange_16">#29FFFFFF</color>
+    <color name="dark_orange">#FFFFFF</color>
+    <color name="wa_yellow">#FFFFFF</color>
+    <color name="light_yellow">#FFFFFF</color>
+    <color name="prussian_blue">#000000</color>
+    <color name="onboardingIndicatorActive">#FFFFFF</color>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#FFFFFF</color>
+    <color name="colorPrimaryInverse">#FFFFFF</color>
+    <color name="spectre_black">#000000</color>
+    <color name="spectre_white">#FFFFFF</color>
+    <color name="spectre_white_60">#99FFFFFF</color>
+    <color name="spectre_red">#FF3B30</color>
+</resources>

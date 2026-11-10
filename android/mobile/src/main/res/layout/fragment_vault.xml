@@ -29,6 +29,13 @@
             app:rightIconContentDescription="@string/quick_exit_action"
             />
 
+        <!-- SPECTRE Capture: deposit card + capture tiles, filled in the spectre flavor only -->
+        <FrameLayout
+            android:id="@+id/spectreHomeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
