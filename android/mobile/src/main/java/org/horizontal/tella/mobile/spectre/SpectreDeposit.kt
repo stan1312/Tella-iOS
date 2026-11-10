@@ -276,8 +276,37 @@ object SpectreDeposit {
 
     fun isEnrolled(): Boolean = credentials()?.load() != null
 
-    /** Validates an invitation link without network access (for the confirmation dialog). */
-    fun parseInvite(payload: String) = EnrollmentParser.parse(payload, allowInsecureLocalhost = BuildConfig.DEBUG)
+    /**
+     * Validates an invitation without network access (for the confirmation dialog). Accepts the
+     * spectre://enroll link, the https link sent by message, or a whole message that contains one.
+     */
+    fun parseInvite(payload: String) = EnrollmentParser.find(payload, allowInsecureLocalhost = BuildConfig.DEBUG)
+        ?: throw org.spectre.capture.core.SpectreException.InvalidEnrollmentPayload("format")
+
+    fun findInvite(text: String?) = EnrollmentParser.find(text, allowInsecureLocalhost = BuildConfig.DEBUG)
+
+    // ------------------------------------------------ invitation waiting for the first unlock
+    // An invitation link may open the app before its lock exists (first launch) or while it
+    // is locked: it is kept here (app-private, no backup, 48 h at most) and offered again on
+    // the home screen once the app is unlocked. Single-use code, nothing else is stored.
+
+    private fun pendingFile() = File(File(appContext.noBackupFilesDir, "spectre"), "pending_invite").also { it.parentFile?.mkdirs() }
+
+    fun setPendingInvite(link: String) {
+        if (!::appContext.isInitialized || findInvite(link) == null) return
+        runCatching { pendingFile().writeText(System.currentTimeMillis().toString() + "\n" + link.take(1000)) }
+    }
+
+    fun takePendingInvite(): String? {
+        if (!::appContext.isInitialized) return null
+        val f = pendingFile()
+        if (!f.exists()) return null
+        val lines = runCatching { f.readText().split("\n", limit = 2) }.getOrNull()
+        f.delete()
+        val at = lines?.getOrNull(0)?.toLongOrNull() ?: return null
+        if (System.currentTimeMillis() - at > 48L * 3600 * 1000) return null
+        return lines.getOrNull(1)?.takeIf { findInvite(it) != null }
+    }
 
     /** Enrols this phone with a one-time invitation; result on the intake thread. */
     fun enroll(payload: String, done: (Boolean, String?) -> Unit) {

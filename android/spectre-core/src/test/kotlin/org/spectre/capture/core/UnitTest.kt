@@ -179,6 +179,34 @@ class EnrollmentAndLoggingTest {
         EnrollmentParser.parse("spectre://enroll?v=1&endpoint=http%3A%2F%2F127.0.0.1%3A9%2Fx&code=0123abcd-4567ef01-89abcdef", allowInsecureLocalhost = true)
     }
 
+    @Test fun httpsInvitationLink() {
+        val code = "0123abcd-4567ef01-89abcdef-01234567"
+        val inv = EnrollmentParser.parse("https://script.google.com/macros/s/AKfy_cb-12/exec?i=$code")
+        assertEquals("https://script.google.com/macros/s/AKfy_cb-12/exec", inv.endpoint)
+        assertEquals(code, inv.code)
+        for (bad in listOf(
+            "http://script.google.com/macros/s/AKfy/exec?i=$code",
+            "https://evil.example/macros/s/AKfy/exec?i=$code",
+            "https://script.google.com.evil.example/macros/s/AKfy/exec?i=$code",
+            "https://user@script.google.com/macros/s/AKfy/exec?i=$code",
+            "https://script.google.com:8443/macros/s/AKfy/exec?i=$code",
+            "https://script.google.com/macros/s/AKfy/exec?i=$code#x",
+            "https://script.google.com/macros/s/AKfy/exec?i=$code&x=1",
+            "https://script.google.com/macros/s/AKfy/dev?i=$code",
+            "https://script.google.com/macros/s/AK/fy/exec?i=$code",
+            "https://script.google.com/macros/s/AKfy/exec?i=short",
+            "https://script.google.com/macros/s/AKfy/exec")) {
+            assertThrows(bad, SpectreException.InvalidEnrollmentPayload::class.java) { EnrollmentParser.parse(bad) }
+        }
+        // a whole message pasted or left in the clipboard
+        val msg = "Rejoins le dépôt SPECTRE : ouvre ce lien.\nhttps://script.google.com/macros/s/AKfy/exec?i=$code\n(Lien personnel.)"
+        assertEquals(code, EnrollmentParser.find(msg)?.code)
+        assertEquals(code, EnrollmentParser.find("voir spectre://enroll?v=1&endpoint=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfy%2Fexec&code=$code merci")?.code)
+        assertNull(EnrollmentParser.find("https://evil.example/macros/s/AKfy/exec?i=$code"))
+        assertNull(EnrollmentParser.find("bonjour"))
+        assertNull(EnrollmentParser.find(null))
+    }
+
     @Test fun logRedaction() {
         val sink = MemoryLogSink()
         SpectreLog(sink).event("x", mapOf("capture" to "0f8fad5b-d9cb-469f-a165-70867728950e",

@@ -92,6 +92,12 @@ class MockStack {
 
     fun control(json: String) { request("/__control", "POST", json) }
     fun inviteLink(label: String = "membre-test"): String = request("/__admin/invite?label=$label").get("link").asString
+    /** Link as sent by message from the owner's control page: <web app>/exec?i=<code>. */
+    fun httpsInviteLink(label: String = "membre-https"): String {
+        val inv = request("/__admin/invite?label=$label")
+        val endpoint = java.net.URLDecoder.decode(inv.get("link").asString.substringAfter("endpoint=").substringBefore("&"), "UTF-8")
+        return endpoint + "?i=" + inv.get("code").asString
+    }
     fun revoke(deviceId: String) { request("/__admin/revoke?deviceId=$deviceId") }
     fun ownerFiles(): List<JsonObject> = request("/__owner/files").getAsJsonArray("files").map { it.asJsonObject }
     fun dropsDone(): Int = request("/__owner/files").get("dropsDone").asInt
@@ -161,8 +167,10 @@ class Phone(
         return captureId
     }
 
-    fun enroll(stack: MockStack): DeviceCredentials {
-        val invite = EnrollmentParser.parse(stack.inviteLink(), allowInsecureLocalhost = true)
+    fun enroll(stack: MockStack): DeviceCredentials = enrollWith(stack.inviteLink())
+
+    fun enrollWith(link: String): DeviceCredentials {
+        val invite = EnrollmentParser.find(link, allowInsecureLocalhost = true) ?: error("no invitation in: $link")
         return CredentialVault(secrets).enroll(invite, HttpDepositBackend(transport))
     }
 

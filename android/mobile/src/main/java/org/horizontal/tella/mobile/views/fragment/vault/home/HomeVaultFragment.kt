@@ -600,6 +600,7 @@ class HomeVaultFragment : BaseFragment(), VaultClickListener {
         updateToolbarIcon()
         scrollHomeToTop()
         org.horizontal.tella.mobile.spectre.SpectreDeposit.onVaultUnlocked()
+        org.horizontal.tella.mobile.spectre.SpectreHomeView.offerInvitation(this)
     }
 
     private fun scrollHomeToTop() {

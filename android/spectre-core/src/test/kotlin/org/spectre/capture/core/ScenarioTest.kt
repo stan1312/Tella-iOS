@@ -404,4 +404,17 @@ class ScenarioTest {
         val m4a = File(tempDir("m4a"), "rec.m4a").apply { writeBytes(stack.ownerDownload(r.receipt!!.driveFileId)) }
         assertEquals(Ffmpeg.decodedMd5(adts), Ffmpeg.decodedMd5(m4a))
     }
+
+    // Invitation received as an https link inside a message, then a deposit.
+    @Test fun httpsInvitationLinkInAMessageEnrolsAndDeposits() {
+        val p = Phone()
+        val link = stack.httpsInviteLink()
+        assertTrue(link, link.contains("/macros/s/MOCK/exec?i="))
+        p.enrollWith("Rejoins le dépôt SPECTRE :\n$link\n(Lien personnel.)")
+        val bytes = syntheticBytes(300_000, 31)
+        val r = p.run(p.capture(bytes))
+        assertEquals(r.failure.toString(), CaptureStage.completed, r.stage)
+        // single use
+        assertThrows(SpectreException::class.java) { Phone().enrollWith(link) }
+    }
 }

@@ -1,10 +1,12 @@
-// SPECTRE Capture — enrolment with the one-time invitation shown IN PERSON by
-// the owner (QR). Accepts the QR scanned here, a pasted link, or a
-// spectre://enroll link opened from the system camera. Always asks for an
-// explicit confirmation and requires the unlocked app (BaseLockActivity), so a
-// stray link cannot silently redirect this phone's deposits.
+// SPECTRE Capture — enrolment with the owner's one-time invitation: the https link
+// received by message (opened from the invitation page), a QR scanned here, a pasted
+// link/message, or the clipboard. Always asks for an explicit confirmation and
+// requires the unlocked app (BaseLockActivity), so a stray link cannot silently
+// redirect this phone's deposits. A link that arrives before the first unlock is
+// kept and offered again once the app is unlocked.
 package org.horizontal.tella.mobile.spectre
 
+import android.content.ClipboardManager
 import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
+import org.horizontal.tella.mobile.MyApplication
 import org.horizontal.tella.mobile.views.base_ui.BaseLockActivity
 import java.net.URI
 
@@ -35,13 +38,13 @@ class SpectreEnrollActivity : BaseLockActivity() {
         val root = SpectreUi.column(c).apply { setBackgroundColor(SpectreUi.BLACK) }
         root.addView(SpectreUi.label(c, "CONFIGURER CET APPAREIL", 16f))
         root.addView(SpectreUi.label(c,
-            "Scannez l'invitation que le responsable vous montre en personne. Elle ne sert qu'une fois et expire après 48 h. " +
-                "Ne la recevez jamais par messagerie.", 13f, bold = false, color = SpectreUi.WHITE_60), SpectreUi.lp(c, 8))
-        root.addView(SpectreUi.button(c, "Scanner le QR d'invitation", filled = true) {
+            "Ouvrez le lien d'invitation reçu et touchez « Ouvrir dans SPECTRE Capture », ou copiez le message " +
+                "puis « Coller l'invitation ». Elle ne sert qu'une fois et expire après 48 h.", 13f, bold = false, color = SpectreUi.WHITE_60), SpectreUi.lp(c, 8))
+        root.addView(SpectreUi.button(c, "Coller l'invitation", filled = true) { pasteFromClipboardOrAsk() }, SpectreUi.lp(c, 16))
+        root.addView(SpectreUi.button(c, "Scanner le QR d'invitation") {
             scan.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE).setPrompt("Invitation SPECTRE")
                 .setBeepEnabled(false).setOrientationLocked(false))
-        }, SpectreUi.lp(c, 16))
-        root.addView(SpectreUi.button(c, "Coller un lien d'invitation") { pasteDialog() }, SpectreUi.lp(c, 8))
+        }, SpectreUi.lp(c, 8))
         message = SpectreUi.label(c, "", 13f, bold = false)
         root.addView(message, SpectreUi.lp(c, 16))
         root.addView(SpectreUi.button(c, "Fermer") { finish() }, SpectreUi.lp(c, 24))
@@ -54,13 +57,33 @@ class SpectreEnrollActivity : BaseLockActivity() {
         handleLink(intent)
     }
 
+    /** Links are offered once the app is unlocked (see onResume); kept if the lock screen comes first. */
     private fun handleLink(intent: Intent?) {
-        val data = intent?.data ?: return
-        if (data.scheme == "spectre") confirm(data.toString())
+        val link = intent?.data?.toString() ?: intent?.getStringExtra(EXTRA_INVITE) ?: return
+        SpectreDeposit.setPendingInvite(link)
+        intent?.data = null
+        intent?.removeExtra(EXTRA_INVITE)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!isLocked && MyApplication.getMainKeyHolder().exists()) {
+            SpectreDeposit.takePendingInvite()?.let { confirm(it) }
+        }
+    }
+
+    private fun pasteFromClipboardOrAsk() {
+        val clip = (getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager)?.primaryClip
+        val text = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(this)?.toString()
+        if (SpectreDeposit.findInvite(text) != null) confirm(text!!) else pasteDialog()
+    }
+
+    companion object {
+        const val EXTRA_INVITE = "spectre.invite"
     }
 
     private fun pasteDialog() {
-        val input = EditText(this).apply { hint = "spectre://enroll?…"; setSingleLine(false) }
+        val input = EditText(this).apply { hint = "Collez ici le message d'invitation"; setSingleLine(false) }
         AlertDialog.Builder(this)
             .setTitle("Lien d'invitation")
             .setView(LinearLayout(this).apply { setPadding(48, 16, 48, 0); addView(input) })
@@ -93,6 +116,7 @@ class SpectreEnrollActivity : BaseLockActivity() {
                 busy = false
                 if (ok) {
                     show("Appareil configuré. Les enregistrements seront déposés automatiquement.", error = false)
+                    message.postDelayed({ if (!isFinishing) finish() }, 1500)
                 } else {
                     show(err ?: "Invitation refusée.", error = true)
                 }

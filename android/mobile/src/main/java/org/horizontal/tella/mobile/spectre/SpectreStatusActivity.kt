@@ -57,7 +57,7 @@ class SpectreStatusActivity : BaseLockActivity() {
         val enrolled = SpectreDeposit.enrolled.value == true
         val name = SpectreDeposit.depositName.value
         header.text = when {
-            !enrolled -> "Cet appareil n'est pas configuré. Demandez une invitation (QR) au responsable, en personne."
+            !enrolled -> "Cet appareil n'est pas configuré. Ouvrez le lien d'invitation reçu du responsable."
             name.isNullOrEmpty() -> "Appareil configuré."
             else -> "Appareil configuré. Dossier de dépôt : $name"
         }

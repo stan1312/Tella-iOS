@@ -17,6 +17,10 @@ export function createGasRuntime({ drive, ownerToken, clock = () => Date.now(), 
   const logs = [];
   const fetchLog = [];
   let lockHeld = false;
+  // Identity seen by Session: the owner by default (editor runs, control page);
+  // '' models an anonymous visitor of the "Anyone" web app (Google gives no e-mail).
+  const OWNER = 'owner@example.test';
+  let activeUser = OWNER;
 
   const sandbox = {
     console: { log: (...a) => logs.push(a.join(' ')) },
@@ -75,6 +79,16 @@ export function createGasRuntime({ drive, ownerToken, clock = () => Date.now(), 
       MimeType: { JSON: 'application/json' },
       createTextOutput: (s) => ({ content: s, setMimeType() { return this; }, getContent() { return this.content; } }),
     },
+    Session: {
+      getActiveUser: () => ({ getEmail: () => activeUser }),
+      getEffectiveUser: () => ({ getEmail: () => OWNER }),
+    },
+    HtmlService: {
+      createHtmlOutput: (html) => ({
+        kind: 'html', content: String(html), title: '',
+        setTitle(t) { this.title = t; return this; }, addMetaTag() { return this; }, getContent() { return this.content; },
+      }),
+    },
     ScriptApp: {
       getOAuthToken: () => ownerToken(),
       getService: () => ({ getUrl: () => webAppUrl }),
@@ -83,7 +97,7 @@ export function createGasRuntime({ drive, ownerToken, clock = () => Date.now(), 
     },
   };
   // Make sure the real code never touches services we do not grant.
-  for (const forbidden of ['DriveApp', 'SpreadsheetApp', 'GmailApp', 'MailApp', 'HtmlService', 'Session']) {
+  for (const forbidden of ['DriveApp', 'SpreadsheetApp', 'GmailApp', 'MailApp']) {
     Object.defineProperty(sandbox, forbidden, { get() { throw new Error(`${forbidden} must not be used`); } });
   }
   const ctx = vm.createContext(sandbox);
@@ -93,7 +107,16 @@ export function createGasRuntime({ drive, ownerToken, clock = () => Date.now(), 
   return {
     ctx, props, logs, fetchLog,
     doPost: (body) => JSON.parse(ctx.doPost({ postData: { contents: body } }).getContent()),
-    doGet: () => JSON.parse(ctx.doGet({}).getContent()),
+    /** GET as an anonymous visitor (default) or as the owner: { kind: 'html'|'json', content, title }. */
+    get: (parameter = {}, { asOwner = false } = {}) => {
+      const prev = activeUser; activeUser = asOwner ? OWNER : '';
+      try {
+        const out = ctx.doGet({ parameter });
+        return { kind: out.kind === 'html' ? 'html' : 'json', content: out.getContent(), title: out.title || '' };
+      } finally { activeUser = prev; }
+    },
+    /** Runs fn with the given Session identity ('' = anonymous). */
+    as: (email, fn) => { const prev = activeUser; activeUser = email; try { return fn(); } finally { activeUser = prev; } },
     env: () => ctx.spGasEnv_(),
     configure: ({ folderId, apiBase }) => {
       props.set('CFG_FOLDER_ID', folderId);

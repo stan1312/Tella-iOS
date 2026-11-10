@@ -14,6 +14,37 @@ import org.horizontal.tella.mobile.spectre.SpectreUi.dp
 
 object SpectreHomeView {
 
+    private var lastOfferedClip: Int? = null
+
+    /**
+     * Home screen shown (app unlocked): offers an invitation that arrived before the first
+     * unlock, or — when this phone is not configured yet — one found in the clipboard
+     * (the message copied from the owner). Always ends in the explicit confirmation dialog.
+     */
+    @JvmStatic
+    fun offerInvitation(fragment: Fragment) {
+        if (!SpectreDeposit.enabled) return
+        val ctx = fragment.context ?: return
+        SpectreDeposit.engineOrInit(ctx)
+        SpectreDeposit.takePendingInvite()?.let { open(fragment, it); return }
+        if (SpectreDeposit.isEnrolled()) return
+        // Android only lets the focused app read the clipboard: wait until the window has focus.
+        fragment.view?.postDelayed({
+            if (!fragment.isResumed) return@postDelayed
+            val cm = fragment.context?.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+            val text = runCatching { cm?.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(ctx)?.toString() }.getOrNull()
+            if (SpectreDeposit.findInvite(text) != null && text.hashCode() != lastOfferedClip) {
+                lastOfferedClip = text.hashCode()
+                open(fragment, text!!)
+            }
+        }, 600)
+    }
+
+    private fun open(fragment: Fragment, invite: String) {
+        val ctx = fragment.context ?: return
+        ctx.startActivity(Intent(ctx, SpectreEnrollActivity::class.java).putExtra(SpectreEnrollActivity.EXTRA_INVITE, invite))
+    }
+
     /** Fills [container] (inside the home app bar) when the SPECTRE flavor is active. */
     @JvmStatic
     fun attach(fragment: Fragment, container: FrameLayout?) {
@@ -30,7 +61,10 @@ object SpectreHomeView {
             background = SpectreUi.outline(c)
             setPadding(dp(c, 16), dp(c, 12), dp(c, 16), dp(c, 12))
             contentDescription = "Dépôt SPECTRE"
-            setOnClickListener { c.startActivity(Intent(c, SpectreStatusActivity::class.java)) }
+            setOnClickListener {
+                val target = if (SpectreDeposit.enrolled.value == true) SpectreStatusActivity::class.java else SpectreEnrollActivity::class.java
+                c.startActivity(Intent(c, target))
+            }
         }
         val title = SpectreUi.label(c, "DÉPÔT SPECTRE")
         val summary = SpectreUi.label(c, "", 12f, bold = false, color = SpectreUi.WHITE_60, mono = true)
@@ -58,7 +92,7 @@ object SpectreHomeView {
             val pending = records.count { it.stage != org.spectre.capture.core.CaptureStage.completed }
             val problems = records.count { SpectreUi.isProblem(it) }
             summary.text = when {
-                !enrolled -> "Appareil non configuré : scannez votre invitation"
+                !enrolled -> "Appareil non configuré : touchez ici, puis ouvrez ou collez votre lien d'invitation"
                 problems > 0 -> "$problems enregistrement(s) à vérifier — encore sur ce téléphone"
                 pending > 0 -> "$pending enregistrement(s) en attente ou en cours d'envoi"
                 else -> "Aucun enregistrement en attente"

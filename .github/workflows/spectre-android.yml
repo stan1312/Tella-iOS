@@ -145,6 +145,12 @@ jobs:
             adb shell pidof org.spectre.capture && echo "APP_RUNNING"
             ! grep -E "FATAL EXCEPTION|ANR in org.spectre" logcat.txt
             adb shell pidof org.spectre.capture
+            adb shell "am start -W -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d 'spectre://enroll?v=1&endpoint=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FFAKE%2Fexec&code=0123abcd-4567ef01-89abcdef-01234567'"
+            sleep 8
+            adb exec-out screencap -p > invitation-link.png
+            adb logcat -d > logcat.txt
+            ! grep -E "FATAL EXCEPTION|ANR in org.spectre" logcat.txt
+            adb shell pidof org.spectre.capture
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: 'emulator-smoke-${{ github.run_number }}', path: "first-screen.png\nlogcat.txt" }
+        with: { name: 'emulator-smoke-${{ github.run_number }}', path: "first-screen.png\ninvitation-link.png\nlogcat.txt" }

@@ -40,7 +40,11 @@ export async function startMockStack({ port = 0, redirectLikeAppsScript = true }
 
       if (u.pathname === '/macros/s/MOCK/exec') {
         if (backendFaults.unavailable > 0) { backendFaults.unavailable--; req.resume(); res.writeHead(503); res.end('<html>Service unavailable</html>'); return; }
-        if (req.method === 'GET') return json(res, 200, gas.doGet());
+        if (req.method === 'GET') {   // anonymous visitor (the owner's control page is tested through gas.get)
+          const out = gas.get(Object.fromEntries(u.searchParams));
+          if (out.kind === 'html') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(out.content); return; }
+          res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(out.content); return;
+        }
         if (req.method !== 'POST') { res.writeHead(405); res.end(); return; }
         const out = gas.doPost(await readBody(req));
         if (redirectLikeAppsScript) {

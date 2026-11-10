@@ -383,19 +383,123 @@ describe('status shown on the phone and audio deposits', () => {
   });
 });
 
+describe('owner control page and invitation links', () => {
+  const FOLDER = 'application/vnd.google-apps.folder';
+  const PUBLIC_ADMIN = ['spectreInstall', 'spectreSetup', 'spectreSetWebAppUrl', 'spectreCreateInvite', 'spectreNouvelleInvitation',
+    'spectreNouvelleManif', 'spectreDossierPrincipal', 'spectreListDevices', 'spectreRevokeDevice', 'spectreRevokeAllDevices',
+    'spectrePilotageEtat', 'spectrePilotageManif', 'spectrePilotageDossierPrincipal', 'spectrePilotageInviter',
+    'spectrePilotageLienApk', 'spectrePilotageRevoquer'];
+
+  test('anonymous visitor: GET /exec still answers NOT_FOUND (no control page, nothing listed)', async () => {
+    const r = await fetch(s.webAppUrl);
+    assert.equal((await r.json()).error.code, 'NOT_FOUND');
+    const page = s.gas.get({}, { asOwner: true });
+    assert.equal(page.kind, 'html');
+    assert.match(page.content, /SPECTRE · PILOTAGE/);
+  });
+  test('anonymous caller (google.script.run from any page) is refused by every admin function; nothing changes', async () => {
+    const c = await H.enroll(s);
+    const before = JSON.stringify([...s.gas.props.entries()].sort());
+    for (const fn of PUBLIC_ADMIN) {
+      assert.throws(() => s.gas.as('', () => s.gas.ctx[fn]('x')), /propriétaire/, fn);
+      assert.throws(() => s.gas.as('someone@else.test', () => s.gas.ctx[fn]('x')), /propriétaire/, fn);
+    }
+    assert.equal(JSON.stringify([...s.gas.props.entries()].sort()), before);
+    const r = await H.call(s, c, 'status', {});
+    assert.equal(r.ok, true, 'device still active');
+  });
+  test('new demonstration with a typed name: folder created under the main one, every new deposit goes there, phones see the name', async () => {
+    const c = await H.enroll(s);
+    const root = s.gas.props.get('CFG_FOLDER_ID');
+    const name = s.gas.ctx.spectrePilotageManif('  2026-11-15 Manif\nLausanne / centre ');
+    assert.equal(name, '2026-11-15 Manif Lausanne centre');
+    const sub = [...s.drive.files.values()].find((f) => f.mimeType === FOLDER && f.name === name);
+    assert.ok(sub); assert.deepEqual(sub.parents, [root]);
+    const { fin } = await fullDeposit(c, H.fixture(900, 21));
+    assert.deepEqual(s.drive.files.get(fin.data.receipt.driveFileId).parents, [sub.id]);
+    const st = await H.call(s, c, 'status', {});
+    assert.deepEqual(st.data, { depositName: name, isEvent: true });
+    const etat = s.gas.ctx.spectrePilotageEtat();
+    assert.equal(etat.depositName, name); assert.equal(etat.isEvent, true);
+    assert.equal(etat.rootName, 'SPECTRE_DEPOT_TEST');
+    s.gas.ctx.spectrePilotageDossierPrincipal();
+    assert.equal(s.gas.props.get('CFG_FOLDER_ID'), root);
+    assert.equal(s.gas.ctx.spectrePilotageEtat().isEvent, false);
+  });
+  test('invitation from the control page: https link → public page → single-use enrolment; link never logged', async () => {
+    s.gas.ctx.spectrePilotageLienApk('https://drive.google.com/file/d/FAKE_APK/view');
+    const inv = s.gas.ctx.spectrePilotageInviter('');
+    assert.match(inv.label, /^membre-\d{2}$/);
+    assert.ok(inv.message.includes(inv.link));
+    const u = new URL(inv.link);
+    assert.equal(u.origin + u.pathname, s.webAppUrl);
+    assert.deepEqual([...u.searchParams.keys()], ['i'], 'exactly one query parameter (iOS/Android parsers)');
+    const code = u.searchParams.get('i');
+    assert.match(code, /^[0-9a-f]{8}(-[0-9a-f]{8}){3}$/);
+    const page = await (await fetch(inv.link)).text();
+    assert.match(page, /Télécharger SPECTRE Capture/);
+    assert.ok(page.includes('href="https://drive.google.com/file/d/FAKE_APK/view"'));
+    const deep = 'spectre://enroll?v=1&amp;endpoint=' + encodeURIComponent(s.webAppUrl) + '&amp;code=' + code;
+    assert.ok(page.includes(deep), 'spectre:// deep link');
+    assert.ok(page.includes('intent://enroll?v=1&amp;endpoint=') && page.includes('#Intent;scheme=spectre;'), 'Android intent link');
+    assert.ok(!page.includes('google.script'), 'public page calls no server function');
+    const a = await H.post(s, { action: 'enroll', payload: JSON.stringify({ inviteCode: code, platform: 'android' }) });
+    assert.equal(a.ok, true, JSON.stringify(a));
+    const again = await H.post(s, { action: 'enroll', payload: JSON.stringify({ inviteCode: code }) });
+    assert.equal(again.ok, false, 'single use');
+    assert.ok(s.gas.ctx.spectrePilotageEtat().devices.some((d) => d.label === inv.label));
+    assert.ok(!s.gas.logs.join('\n').includes(code), 'code never logged');
+  });
+  test('invitation page escapes its input and shows no link for a malformed code', async () => {
+    for (const bad of ['"><script>alert(1)</script>', 'short', 'a'.repeat(65), 'abc def ghi jkl mno pqr']) {
+      const page = await (await fetch(s.webAppUrl + '?i=' + encodeURIComponent(bad))).text();
+      assert.ok(!page.includes('<script>alert'), bad);
+      assert.match(page, /incomplet/);
+      assert.ok(!/spectre:\/\/|intent:\/\//.test(page), bad);
+    }
+    assert.throws(() => s.gas.ctx.spectrePilotageLienApk('javascript:alert(1)'), /https/);
+    assert.throws(() => s.gas.ctx.spectrePilotageLienApk('https://x.test/"onmouseover="1'), /https/);
+    s.gas.ctx.spectrePilotageLienApk('');
+    const inv = s.gas.ctx.spectrePilotageInviter('<b>Alex</b>');
+    const page = await (await fetch(inv.link)).text();
+    assert.ok(!/Télécharger/.test(page), 'no APK button when no APK link is set');
+    assert.equal(inv.label, '<b>Alex< b>', 'label cleaned (shown with textContent on the control page)');
+  });
+  test('revocation from the control page', async () => {
+    const c = await H.enroll(s);
+    assert.throws(() => s.gas.ctx.spectrePilotageRevoquer('../../x'), /invalide/);
+    assert.equal(s.gas.ctx.spectrePilotageRevoquer(c.deviceId), true);
+    const r = await H.call(s, c, 'initUpload', H.initPayload(H.fixture(100, 3)));
+    assert.equal(r.error.code, 'DEVICE_REVOKED');
+  });
+});
+
 describe('static checks of the Apps Script source', () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const src = fs.readdirSync(path.join(here, '../src')).filter((f) => f.endsWith('.js'))
     .map((f) => fs.readFileSync(path.join(here, '../src', f), 'utf8')).join('\n');
-  test('no DriveApp / HtmlService / full drive scope; manifest scopes are minimal', () => {
-    assert.ok(!/DriveApp|HtmlService|google\.script\.run/.test(src));
+  test('no DriveApp / full drive scope; HtmlService only in the web pages file; manifest scopes are minimal', () => {
+    assert.ok(!/DriveApp/.test(src));
+    for (const f of fs.readdirSync(path.join(here, '../src')).filter((x) => x.endsWith('.js') && x !== '40_Web.js')) {
+      assert.ok(!/HtmlService|google\.script\.run/.test(fs.readFileSync(path.join(here, '../src', f), 'utf8')), f);
+    }
     const manifest = JSON.parse(fs.readFileSync(path.join(here, '../src/appsscript.json'), 'utf8'));
     assert.deepEqual(manifest.oauthScopes.sort(), [
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/script.external_request',
       'https://www.googleapis.com/auth/script.scriptapp',
+      'https://www.googleapis.com/auth/userinfo.email',
     ]);
     assert.equal(manifest.webapp.executeAs, 'USER_DEPLOYING');
+  });
+  test('every public server function (callable through google.script.run) is owner-only, except the web entry points and the purge', () => {
+    const publicFns = [...src.matchAll(/^function ([A-Za-z0-9]+[A-Za-z0-9]*)\(/gm)].map((m) => m[1]).filter((n) => !n.endsWith('_'));
+    assert.ok(publicFns.length >= 15, publicFns.join());
+    for (const n of publicFns) {
+      if (['doGet', 'doPost', 'spectreDailyPurge'].includes(n)) continue;
+      const body = src.slice(src.indexOf('function ' + n + '('));
+      assert.match(body.slice(0, body.indexOf('\n}')), /^\s*spRequireOwner_\(\);/m, n + ' must start with spRequireOwner_()');
+    }
   });
   test('no secret-looking literal in the source', () => {
     assert.ok(!/ya29\.|AIza[0-9A-Za-z_-]{20,}|-----BEGIN|client_secret/.test(src));
