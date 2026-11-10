@@ -25,6 +25,7 @@ enum FileSource {
     case phPicker
     case files
     case camera
+    case recorder   // SPECTRE: dictaphone recordings are deposited
     case editFile
 }
 

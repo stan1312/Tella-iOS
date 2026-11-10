@@ -146,6 +146,7 @@ class CameraViewModel: ObservableObject {
     }
     
     private func handleSuccessAddingFiles(vaultFiles:[VaultFileDB]) {
+        vaultFiles.forEach { mainAppModel.spectre.handleNewCapture($0) }   // SPECTRE deposit (idempotent)
         self.updateResultFile(vaultFiles:vaultFiles)
     }
     

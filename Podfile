@@ -16,8 +16,25 @@ target 'Tella' do
     # Pods for testing
   end
 
+  # SPECTRE Capture app-hosted tests (see scripts/xcode_add_spectre_app_tests.rb)
+  target 'SpectreAppTests' do
+    inherit! :search_paths
+  end
+
   target 'TellaUITests' do
     # Pods for testing
   end
 
+end
+
+# SPECTRE Capture: recent Xcode (27.x) refuses pods whose deployment target is below iOS 15.
+# Align every pod with the app's own minimum (iOS 15.0).
+post_install do |installer|
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |c|
+      if c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
 end

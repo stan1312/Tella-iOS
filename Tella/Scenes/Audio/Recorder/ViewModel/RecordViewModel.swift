@@ -80,7 +80,7 @@ class RecordViewModel: ObservableObject {
         
         let importedFiles = ImportedFile(urlFile: urlFile,
                                          parentId:rootFile?.id,
-                                         fileSource: FileSource.files)
+                                         fileSource: FileSource.recorder)
 
         mainAppModel.vaultFilesManager?.addVaultFile(importedFiles : [importedFiles])
             .sink { importVaultFileResult in
@@ -103,13 +103,14 @@ class RecordViewModel: ObservableObject {
         let importedFile = ImportedFile(urlFile: urlFile,
                                         parentId:rootFile?.id, 
                                         shouldPreserveMetadata: isPreserveMetadataOn,
-                                        fileSource: .files)
+                                        fileSource: .recorder)
 
         self.mainAppModel.addVaultFile(importedFiles: [importedFile],
                                        autoUpload: autoUpload)
     }
     
     private func handleSuccessAddingFiles(vaultFile:VaultFileDB) {
+        mainAppModel.spectre.handleNewCapture(vaultFile)   // SPECTRE deposit (idempotent)
         self.updateResultFile(vaultFile: vaultFile)
     }
     

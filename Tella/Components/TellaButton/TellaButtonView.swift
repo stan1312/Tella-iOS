@@ -90,11 +90,11 @@ struct TellaButtonView<Destination:View> : View {
             .padding(.vertical, 16)
             .multilineTextAlignment(.center)
             
-        }.cornerRadius(20)
+        }.cornerRadius(0)
             .buttonStyle(TellaButtonStyle(buttonStyle: buttonStyle, isValid: isValid))
             .disabled(isValid == false)
             .overlay(self.isOverlay ?
-                     RoundedRectangle(cornerRadius: 20)
+                     Rectangle()
                 .stroke(.white, lineWidth: 4) : nil)
     }
 }
@@ -103,7 +103,7 @@ struct TellaButtonStyle : ButtonStyle {
     
     var buttonStyle : TellaButtonStyleProtocol
     var isValid : Bool
-    var cornerRadius: CGFloat = 20
+    var cornerRadius: CGFloat = 0
     var buttonRole: ButtonRole = .primary
     
     func makeBody(configuration: Configuration) -> some View {

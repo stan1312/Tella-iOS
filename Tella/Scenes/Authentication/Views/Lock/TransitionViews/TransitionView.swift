@@ -44,7 +44,7 @@ struct TransitionView: View {
             } label: {
                 Text(transitionViewData.buttonTitle)
                     .font(.custom(Styles.Fonts.boldFontName, size: 16))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(Color.clear)
@@ -61,9 +61,9 @@ struct TransitionView: View {
 struct ReadyButtonStyle : ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? Color.init(red: 216/255, green: 175/255, blue: 116/255) : Styles.Colors.yellow)
-            .cornerRadius(20)
-            .overlay(configuration.isPressed ? RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.64), lineWidth: 3) : RoundedRectangle(cornerRadius: 20).stroke(Color.clear, lineWidth: 0) )
+            .background(configuration.isPressed ? Color(UIColor(hexValue: 0xBDBDBD)) : Styles.Colors.yellow)
+            .cornerRadius(0)
+            .overlay(configuration.isPressed ? Rectangle().stroke(Color.white.opacity(0.64), lineWidth: 3) : Rectangle().stroke(Color.clear, lineWidth: 0) )
     }
 }
 

@@ -10,11 +10,11 @@ import SwiftUI
 struct Styles {
     
     struct uiColor {
-        static let backgroundMain = UIColor(hexValue: 0x2C275A)
-        static let backgroundTab = UIColor(hexValue: 0x3D3867)
-        static let yellow = UIColor(hexValue: 0xD6933B)
-        static let lightBlue = UIColor(hexValue: 0x2C6C97)
-        static let disabledYellow = UIColor(hexValue: 0x463755)
+        static let backgroundMain = UIColor(hexValue: 0x000000)   // SPECTRE: black & white
+        static let backgroundTab = UIColor(hexValue: 0x111111)
+        static let yellow = UIColor(hexValue: 0xFFFFFF)   // accent: white
+        static let lightBlue = UIColor(hexValue: 0xBDBDBD)
+        static let disabledYellow = UIColor(hexValue: 0x333333)
         static let gray = UIColor(hexValue: 0xDCDCDC)
         static let backgroundToast = UIColor(hexValue: 0xE8E8EC)
     }
@@ -41,12 +41,12 @@ struct Styles {
     }
     
     struct Fonts {
-        static var boldFontName = "OpenSans-Bold"
-        static var regularFontName = "OpenSans"
-        static var semiBoldFontName = "OpenSans-Semibold"
-        static var lightFontName = "OpenSans-Light"
-        static var lightRobotoFontName = "Roboto-Light"
-        static var italicRobotoFontName = "OpenSans-Italic"
+        static var boldFontName = "HelveticaNeue-Bold"
+        static var regularFontName = "HelveticaNeue"
+        static var semiBoldFontName = "HelveticaNeue-Medium"
+        static var lightFontName = "HelveticaNeue-Light"
+        static var lightRobotoFontName = "HelveticaNeue-Light"
+        static var italicRobotoFontName = "HelveticaNeue-Italic"
     }
 }
 
