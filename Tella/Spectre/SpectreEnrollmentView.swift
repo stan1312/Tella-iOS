@@ -1,6 +1,7 @@
 //
 //  SPECTRE Capture — one-time individual enrolment by QR code or link.
-//  The QR contains spectre://enroll?v=1&endpoint=…&code=… (single use, expires).
+//  The QR or link is spectre://enroll?v=1&endpoint=…&code=…, or the shareable
+//  https://script.google.com/macros/s/<id>/exec?i=<code> (single use, expires).
 //
 
 import SwiftUI
@@ -84,7 +85,7 @@ struct SpectreQRScanner: UIViewControllerRepresentable {
 
         func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput objects: [AVMetadataObject], from connection: AVCaptureConnection) {
             guard !delivered, let s = (objects.first as? AVMetadataMachineReadableCodeObject)?.stringValue,
-                  s.hasPrefix("spectre://enroll") else { return }
+                  s.hasPrefix("spectre://enroll") || s.hasPrefix("https://script.google.com/macros/s/") else { return }
             delivered = true
             onCode?(s)
         }

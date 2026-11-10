@@ -134,6 +134,23 @@ final class EnrollmentAndLoggingTests: XCTestCase {
             XCTAssertThrowsError(try EnrollmentParser.parse(bad), bad)
         }
     }
+    func testParserAcceptsShareableWebAppLink() throws {
+        let link = "https://script.google.com/macros/s/AKfy_cb-123/exec?i=0123abcd-4567ef01-89abcdef-01234567"
+        let inv = try EnrollmentParser.parse("  \(link)\n")
+        XCTAssertEqual(inv.endpoint.absoluteString, "https://script.google.com/macros/s/AKfy_cb-123/exec")
+        XCTAssertEqual(inv.code, "0123abcd-4567ef01-89abcdef-01234567")
+        for bad in ["http://script.google.com/macros/s/AKfy/exec?i=0123abcd-4567ef01-89abcdef-01234567",
+                    "https://evil.example/macros/s/AKfy/exec?i=0123abcd-4567ef01-89abcdef-01234567",
+                    "https://script.google.com.evil.example/macros/s/AKfy/exec?i=0123abcd-4567ef01-89abcdef-01234567",
+                    "https://script.google.com/macros/s/AKfy/dev?i=0123abcd-4567ef01-89abcdef-01234567",
+                    "https://script.google.com/macros/s/AKfy/exec/x?i=0123abcd-4567ef01-89abcdef-01234567",
+                    "https://script.google.com/macros/s/AKfy/exec?i=short",
+                    "https://script.google.com/macros/s/AKfy/exec",
+                    "https://script.google.com/macros/s/AKfy/exec?i=0123abcd-4567ef01-89abcdef-01234567&x=1",
+                    "https://user@script.google.com/macros/s/AKfy/exec?i=0123abcd-4567ef01-89abcdef-01234567"] {
+            XCTAssertThrowsError(try EnrollmentParser.parse(bad), bad)
+        }
+    }
     func testLogRedaction() {
         let sink = MemoryLogSink()
         SpectreLog(sink: sink).event("x", ["capture": "0f8fad5b-d9cb-469f-a165-70867728950e", "status": "https://www.googleapis.com/upload?upload_id=SECRET",
