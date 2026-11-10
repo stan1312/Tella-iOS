@@ -74,6 +74,17 @@ jobs:
             echo "::warning::No SPECTRE_KEYSTORE_B64 secret: building a debug-signed TEST APK (see docs/ANDROID_APK.md)."
             echo "VARIANT=Debug" >> "$GITHUB_ENV"
           fi
+      - name: Check signing key opens (clear error before the long build)
+        if: env.VARIANT == 'Release'
+        env:
+          SPECTRE_KEYSTORE_PASSWORD: ${{ secrets.SPECTRE_KEYSTORE_PASSWORD }}
+          SPECTRE_KEY_ALIAS: ${{ secrets.SPECTRE_KEY_ALIAS }}
+        run: |
+          PW="$(printf '%s' "$SPECTRE_KEYSTORE_PASSWORD" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          ALIAS="$(printf '%s' "${SPECTRE_KEY_ALIAS:-spectre}" | tr -d '\r\n ')"
+          keytool -list -keystore "$SPECTRE_KEYSTORE" -storetype pkcs12 -storepass "$PW" -alias "${ALIAS:-spectre}" >/dev/null \
+            || { echo "::error::The signing key does not open with SPECTRE_KEYSTORE_PASSWORD / SPECTRE_KEY_ALIAS (see docs/ANDROID_APK.md §2)."; exit 1; }
+          echo "Signing key OK"
       - name: Build APK (flavor spectre)
         env:
           SPECTRE_KEYSTORE_PASSWORD: ${{ secrets.SPECTRE_KEYSTORE_PASSWORD }}

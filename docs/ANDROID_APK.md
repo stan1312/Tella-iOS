@@ -31,7 +31,7 @@ Dans GitHub → dépôt → *Settings* → *Secrets and variables* → *Actions*
 | Secret | Valeur |
 |---|---|
 | `SPECTRE_KEYSTORE_B64` | coller (presse-papiers ci-dessus) |
-| `SPECTRE_KEYSTORE_PASSWORD` | contenu de `motdepasse.txt` |
+| `SPECTRE_KEYSTORE_PASSWORD` | contenu de `motdepasse.txt` (`tr -d "\n" < ~/spectre-signing/motdepasse.txt | pbcopy`, le retour à la ligne final est de toute façon ignoré) |
 | `SPECTRE_KEY_ALIAS` | `spectre` |
 
 Sans ces secrets, la CI produit un APK **de test** signé avec une clé de debug jetable : utilisable pour essayer, pas pour l'équipe (il faudra le désinstaller avant d'installer la version signée).

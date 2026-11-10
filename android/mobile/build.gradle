@@ -34,6 +34,9 @@ configurations.all {
 }
 
 def spectreKeystore = project.findProperty("SPECTRE_KEYSTORE") ?: System.getenv("SPECTRE_KEYSTORE")
+// Trimmed: a password pasted from a file (pbcopy < motdepasse.txt) keeps its trailing newline.
+def spectreKeystorePassword = ((project.findProperty("SPECTRE_KEYSTORE_PASSWORD") ?: System.getenv("SPECTRE_KEYSTORE_PASSWORD")) ?: "").toString().trim()
+def spectreKeyAlias = ((project.findProperty("SPECTRE_KEY_ALIAS") ?: System.getenv("SPECTRE_KEY_ALIAS")) ?: "spectre").toString().trim() ?: "spectre"
 
 android {
     namespace 'org.horizontal.tella.mobile'
@@ -167,9 +170,9 @@ android {
             if (spectreKeystore != null) {
                 storeFile file(spectreKeystore)
                 storeType "pkcs12"
-                storePassword(project.findProperty("SPECTRE_KEYSTORE_PASSWORD") ?: System.getenv("SPECTRE_KEYSTORE_PASSWORD"))
-                keyAlias(project.findProperty("SPECTRE_KEY_ALIAS") ?: System.getenv("SPECTRE_KEY_ALIAS") ?: "spectre")
-                keyPassword(project.findProperty("SPECTRE_KEYSTORE_PASSWORD") ?: System.getenv("SPECTRE_KEYSTORE_PASSWORD"))
+                storePassword(spectreKeystorePassword)
+                keyAlias(spectreKeyAlias)
+                keyPassword(spectreKeystorePassword)
                 enableV1Signing false
                 enableV2Signing true
                 enableV3Signing true
