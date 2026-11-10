@@ -1,0 +1,36 @@
+// SPECTRE Capture — deposit core (pure Kotlin/JVM, no Android dependency).
+// Same protocol and guarantees as SpectreCore (iOS): HMAC-signed requests to the
+// deposit-only Apps Script backend, Drive resumable upload, server-verified
+// receipt before any local deletion, encrypted outbox (AES-256-GCM).
+//
+// Inside the Android build the Kotlin plugin comes from the root buildscript;
+// standalone (./gradlew -p spectre-core test, or `gradle test` in this folder)
+// its version comes from spectre-core/settings.gradle.
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation "com.google.code.gson:gson:2.11.0"
+    testImplementation "junit:junit:4.13.2"
+}
+
+test {
+    // End-to-end scenarios start backend/mock-stack/server.mjs (real Apps Script code + simulated Drive).
+    systemProperty "spectre.repoRoot", file("../..").absolutePath
+    if (System.getenv("SPECTRE_LARGE_TEST_BYTES")) environment "SPECTRE_LARGE_TEST_BYTES", System.getenv("SPECTRE_LARGE_TEST_BYTES")
+    testLogging { events "passed", "skipped", "failed"; exceptionFormat "full"; showStandardStreams = false }
+    maxHeapSize = "1g"
+}

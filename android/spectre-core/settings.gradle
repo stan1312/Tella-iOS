@@ -1,0 +1,7 @@
+// Only used when spectre-core is built on its own (no Android SDK needed):
+//   cd android/spectre-core && gradle test
+pluginManagement {
+    repositories { mavenCentral(); gradlePluginPortal() }
+    plugins { id 'org.jetbrains.kotlin.jvm' version '2.2.0' }
+}
+rootProject.name = 'spectre-core'
