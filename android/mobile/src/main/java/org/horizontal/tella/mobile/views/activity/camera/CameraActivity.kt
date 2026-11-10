@@ -108,7 +108,8 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
     private var metadataAttacher: MetadataAttacher? = null
     // SPECTRE Capture opens in video mode (videos are deposited; photos stay in the vault).
     private var mode = if (BuildConfig.SPECTRE_ENABLED) CameraMode.VIDEO else CameraMode.PHOTO
-    private var modeLocked = false
+    // SPECTRE Capture: video only, like the iPhone version (the deposit service takes video and audio).
+    private var modeLocked = BuildConfig.SPECTRE_ENABLED
     private var intentMode: IntentMode? = null
     private var videoRecording = false
     private var progressDialog: ProgressDialog? = null
@@ -344,7 +345,8 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
 
     private fun onAddSuccess(file: VaultFile) {
         capturedMediaFile = file
-        if (intentMode != IntentMode.COLLECT) {
+        // SPECTRE Capture: no preview thumbnail (the capture leaves the phone once deposited).
+        if (intentMode != IntentMode.COLLECT && !BuildConfig.SPECTRE_ENABLED) {
             lastMediaFile = file
             previewView.visibility = View.VISIBLE
             Glide.with(this).load(file.thumb).into(previewView)
@@ -427,7 +429,7 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
 
     private fun onLastMediaFileSuccess(vaultFile: VaultFile) {
         lastMediaFile = vaultFile
-        if (intentMode != IntentMode.COLLECT) {
+        if (intentMode != IntentMode.COLLECT && !BuildConfig.SPECTRE_ENABLED) {
             previewView.visibility = View.VISIBLE
             Glide.with(this).load(vaultFile.thumb).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true).into(previewView)
@@ -878,6 +880,10 @@ class CameraActivity : MetadataActivity(), IMetadataAttachPresenterContract.IVie
         photoModeText = binding.photoText
         videoModeText = binding.videoText
         resolutionButton = binding.resolutionButton
+        if (BuildConfig.SPECTRE_ENABLED) {
+            binding.photoMode.visibility = View.GONE
+            previewView.visibility = View.GONE
+        }
 
         binding.close.setOnClickListener { closeCamera() }
 

@@ -163,6 +163,9 @@ class HomeVaultFragment : BaseFragment(), VaultClickListener {
         showUpdateMigrationBottomSheet()
         // SPECTRE Capture: deposit card + camera / dictaphone tiles (spectre flavor only)
         org.horizontal.tella.mobile.spectre.SpectreHomeView.attach(this, binding.spectreHomeContainer)
+        // SPECTRE Capture: home = deposit card + two buttons only, like the iPhone version
+        // (no file categories, recent files, forms or servers).
+        if (org.horizontal.tella.mobile.BuildConfig.SPECTRE_ENABLED) vaultRecyclerView.visibility = View.GONE
     }
 
     private fun initObservers() {

@@ -110,8 +110,8 @@ object SpectreHomeView {
         val c = fragment.requireContext()
         val t = object : LinearLayout(c) {
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-                // square, capped so the home list keeps room on small phones
-                val side = minOf(android.view.View.MeasureSpec.getSize(widthMeasureSpec), dp(c, 150))
+                // square: the two buttons are the whole home screen (no file list in SPECTRE)
+                val side = minOf(android.view.View.MeasureSpec.getSize(widthMeasureSpec), dp(c, 240))
                 super.onMeasure(widthMeasureSpec, android.view.View.MeasureSpec.makeMeasureSpec(side, android.view.View.MeasureSpec.EXACTLY))
             }
         }
