@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk versions.compileSdk
+
+    defaultConfig {
+        // Use AGP 8 syntax and keep centralized values from root
+        minSdk versions.minSdk
+        targetSdk versions.targetSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    namespace 'org.hzontal.tella.keys'
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    implementation platform("org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin"
+
+    api "com.jakewharton.timber:timber:$versions.timber" // todo: remove this
+    api "androidx.core:core-ktx:$versions.ktx"
+    api "androidx.biometric:biometric:$versions.biometric"
+
+    //bouncycastle
+    api 'org.bouncycastle:bcprov-jdk18on:1.78'
+    api 'org.bouncycastle:bcpkix-jdk18on:1.78'
+
+
+    testImplementation "junit:junit:$versions.junit"
+    androidTestImplementation "androidx.test.ext:junit:$versions.testJunit"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCore"
+}

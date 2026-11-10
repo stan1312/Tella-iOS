@@ -6,6 +6,7 @@
  * the deposit folder so the owner's Mac can turn it into a QR code; delete it after use.
  */
 function spectreInstall() {
+  spRequireOwner_();
   spectreSetup();
   var env = spGasEnv_();
   if (!env.store.get('CFG_WEBAPP_URL') && typeof SPECTRE_LOCAL_WEBAPP_URL === 'string') {
@@ -26,10 +27,9 @@ function spectreInstall() {
  * The colleague scans the QR in person: never send it by messaging.
  */
 function spectreNouvelleInvitation() {
+  spRequireOwner_();
   var env = spGasEnv_();
-  var n = Number(env.store.get('CFG_INVITE_COUNTER') || '1') + 1;
-  env.store.set('CFG_INVITE_COUNTER', String(n));
-  var label = 'membre-' + (n < 10 ? '0' : '') + n;
+  var label = spNextMemberLabel_(env);
   var url = env.store.get('CFG_WEBAPP_URL') || ScriptApp.getService().getUrl();
   var inv = spAdminCreateInvite_(env, label, SPECTRE_POLICY.inviteTtlHours, url);
   var ok = spWriteInvitationFile_(env, inv.link);
@@ -39,14 +39,16 @@ function spectreNouvelleInvitation() {
 }
 
 /**
- * New demonstration: creates a dated sub-folder (MANIF_YYYY-MM-DD, rename it freely
- * in Drive) inside the main deposit folder; every later deposit goes there.
+ * New demonstration: creates a sub-folder named by the owner on the control page
+ * (from the editor: MANIF_YYYY-MM-DD, rename it freely in Drive) inside the main
+ * deposit folder; every later deposit goes there.
  * Uploads already in progress finish in the previous folder. No code to edit.
  */
-function spectreNouvelleManif() {
+function spectreNouvelleManif(name) {
+  spRequireOwner_();
   var env = spGasEnv_();
   var root = spRootFolderId_(env);
-  var name = 'MANIF_' + new Date(env.now()).toISOString().slice(0, 10);
+  name = (typeof name === 'string' && spCleanName_(name, 80)) || 'MANIF_' + new Date(env.now()).toISOString().slice(0, 10);
   var id = spCreateDriveFolder_(env, name, root);
   env.store.set('CFG_FOLDER_ID', id);
   console.log('Folder ' + name + ' created; new deposits go there. You can rename it in Drive.');
@@ -55,6 +57,7 @@ function spectreNouvelleManif() {
 
 /** Back to the main deposit folder (e.g. between two demonstrations). */
 function spectreDossierPrincipal() {
+  spRequireOwner_();
   var env = spGasEnv_();
   env.store.set('CFG_FOLDER_ID', spRootFolderId_(env));
   console.log('New deposits go to the main deposit folder again.');

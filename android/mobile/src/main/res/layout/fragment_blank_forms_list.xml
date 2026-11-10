@@ -1,0 +1,141 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/blankFormView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/space_cadet"
+    android:visibility="gone"
+    tools:context="org.horizontal.tella.mobile.views.fragment.forms.BlankFormsListFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/light_yellow"
+            android:text="@string/collect.blank_banner_forms.updated"
+            android:padding="16dp"
+            android:textAlignment="center"
+            android:textColor="@color/wa_gray"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:visibility="visible" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/main_navigation_bar_height"
+            android:fillViewport="true"
+            android:scrollbars="vertical">
+
+            <RelativeLayout
+                android:id="@+id/forms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/space_cadet"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="@dimen/fab_clear_padding">
+
+                <TextView
+                    android:id="@+id/downloaded_forms_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_alignParentTop="true"
+                    android:gravity="center_vertical"
+                    android:text="@string/Forms_BlankSubheadingDownloadedForms"
+                    android:textAlignment="center"
+                    android:textColor="@color/wa_white_80"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/downloadedForms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/downloaded_forms_title"
+                    android:clipToPadding="false"
+                    android:orientation="vertical"
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbars="vertical"
+                    android:background="@color/space_cadet"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+                <TextView
+                    android:id="@+id/avaivable_forms_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/downloadedForms"
+                    android:gravity="center_vertical"
+                    android:text="@string/Forms_BlankSubheadingFormsOnServers"
+                    android:textAlignment="center"
+                    android:textColor="@color/wa_white_80"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/blankForms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/avaivable_forms_title"
+                    android:background="@color/space_cadet"
+                    android:clipToPadding="false"
+                    android:orientation="vertical"
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbars="vertical"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            </RelativeLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/blank_forms_info"
+        style="@style/ExplanatoryEmptyMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:text="@string/collect.blank_expl_no.forms"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/blank_forms_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="80dp"
+            android:indeterminate="true"
+            app:indicatorColor="@color/tigers_eye"
+            app:trackColor="@color/wa_white"
+            app:trackThickness="4dp" />
+    </FrameLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="112dp"
+        android:background="@color/dark_orange"
+        android:contentDescription="@string/action_refresh"
+        android:src="@drawable/baseline_autorenew_24"
+        android:visibility="visible"
+        app:backgroundTint="@color/dark_orange" />
+
+</FrameLayout>

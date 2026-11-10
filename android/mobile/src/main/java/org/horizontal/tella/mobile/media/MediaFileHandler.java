@@ -1,0 +1,1448 @@
+package org.horizontal.tella.mobile.media;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Parcelable;
+import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
+import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
+import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
+import androidx.exifinterface.media.ExifInterface;
+
+import org.horizontal.tella.mobile.util.crash.CrashReporterProvider;
+import com.hzontal.tella_vault.VaultException;
+import com.hzontal.tella_vault.VaultFile;
+import com.hzontal.tella_vault.filter.FilterType;
+import com.hzontal.tella_vault.filter.Limits;
+import com.hzontal.tella_vault.filter.Sort;
+import com.hzontal.tella_vault.rx.RxVault;
+import com.hzontal.tella_vault.rx.RxVaultFileBuilder;
+import com.hzontal.utils.MediaFile;
+
+import org.hzontal.shared_ui.utils.DialogUtils;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
+import org.horizontal.tella.mobile.MyApplication;
+import org.horizontal.tella.mobile.R;
+import org.horizontal.tella.mobile.data.provider.EncryptedFileProvider;
+import org.horizontal.tella.mobile.data.provider.ShareFileProvider;
+import org.horizontal.tella.mobile.data.sharedpref.Preferences;
+import org.horizontal.tella.mobile.util.C;
+import org.horizontal.tella.mobile.util.FileUtil;
+import org.horizontal.tella.mobile.util.VaultFolderPath;
+
+import com.hzontal.tella_vault.database.VaultDataSource;
+import com.hzontal.tella_vault.exceptions.FileNameAlreadyExistsException;
+
+import timber.log.Timber;
+
+
+public class MediaFileHandler {
+    private static File tmpPath;
+    private static final String CONTENT_SCHEME = "content";
+    private static final String MIME_TYPE_COLUMN = "mime_type";
+    static final String SIGNAL_PACKAGE = "org.thoughtcrime.securesms";
+    private static final String SHARE_CACHE_DIR = "share";
+
+
+    public MediaFileHandler() {
+    }
+
+    public static boolean init(Context context) {
+        try {
+            File mediaPath = new File(context.getFilesDir(), C.MEDIA_DIR); // todo: vault will do this
+            boolean ret = FileUtil.mkdirs(mediaPath);
+
+            File metadataPath = new File(context.getFilesDir(), C.METADATA_DIR);
+            ret = FileUtil.mkdirs(metadataPath) && ret;
+
+            tmpPath = new File(context.getFilesDir(), C.TMP_DIR);
+            return FileUtil.mkdirs(tmpPath) && ret;
+        } catch (Exception e) {
+            Timber.e(e);
+            CrashReporterProvider.INSTANCE.get().recordException(e);
+            return false;
+        }
+    }
+
+    public static void emptyTmp(final Context context) {
+        Completable.fromCallable((Callable<Void>) () -> {
+            FileUtil.emptyDir(new File(context.getFilesDir(), C.TMP_DIR));
+            deleteShareCache(context);
+            return null;
+        }).subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    public static void startSelectMediaActivity(Activity activity, @NonNull String type, @Nullable String[] extraMimeType, int requestCode) {
+        startSelectMediaActivity(activity, type, extraMimeType, requestCode, true);
+    }
+
+    public static void startSelectMediaActivity(Activity activity, @NonNull String type, @Nullable String[] extraMimeType, int requestCode, boolean allowMultiple) {
+        launchFilePicker(activity, type, extraMimeType, allowMultiple, requestCode, false);
+    }
+
+    private static void launchFilePicker(
+            @NonNull Activity activity,
+            @NonNull String type,
+            @Nullable String[] extraMimeType,
+            boolean allowMultiple,
+            int requestCode,
+            boolean deleteOriginal) {
+        PackageManager pm = activity.getPackageManager();
+
+        if (deleteOriginal) {
+            Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    .setType(type)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            if (extraMimeType != null) {
+                openDocument.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeType);
+            }
+            if (openDocument.resolveActivity(pm) != null) {
+                try {
+                    activity.startActivityForResult(openDocument, requestCode);
+                    return;
+                } catch (ActivityNotFoundException e) {
+                    Timber.d(e, "ACTION_OPEN_DOCUMENT failed for import-and-delete");
+                }
+            }
+        }
+
+        Intent getContent = new Intent(Intent.ACTION_GET_CONTENT)
+                .setType(type)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
+        if (extraMimeType != null) {
+            getContent.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeType);
+        }
+        if (getContent.resolveActivity(pm) != null) {
+            try {
+                activity.startActivityForResult(getContent, requestCode);
+                return;
+            } catch (ActivityNotFoundException e) {
+                Timber.d(e, "ACTION_GET_CONTENT failed");
+            }
+        }
+
+        Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .setType(type)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
+        if (extraMimeType != null) {
+            openDocument.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeType);
+        }
+        if (openDocument.resolveActivity(pm) != null) {
+            try {
+                activity.startActivityForResult(openDocument, requestCode);
+                return;
+            } catch (ActivityNotFoundException e) {
+                Timber.d(e, "ACTION_OPEN_DOCUMENT failed");
+            }
+        }
+
+        DialogUtils.showBottomMessage(
+                activity,
+                activity.getString(R.string.gallery_toast_fail_import_no_file_manager),
+                true
+        );
+    }
+
+    public static void destroyGallery(@NonNull final Context context) {
+        // now is not the time to think about background thread ;)
+        FileUtil.emptyDir(new File(context.getFilesDir(), C.MEDIA_DIR));
+        FileUtil.emptyDir(new File(context.getFilesDir(), C.METADATA_DIR));
+        FileUtil.emptyDir(new File(context.getFilesDir(), C.TMP_DIR));
+    }
+
+    public static void exportMediaFile(Context context,
+                                       VaultFile vaultFile,
+                                       @Nullable Uri envDirUri) throws IOException {
+        // Decide target "collection" for app-specific fallback
+        final String envDirType;
+        if (MediaFile.INSTANCE.isImageFileType(vaultFile.mimeType)) {
+            envDirType = Environment.DIRECTORY_PICTURES;
+        } else if (MediaFile.INSTANCE.isVideoFileType(vaultFile.mimeType)) {
+            envDirType = Environment.DIRECTORY_MOVIES;
+        } else if (MediaFile.INSTANCE.isAudioFileType(vaultFile.mimeType)) {
+            envDirType = Environment.DIRECTORY_MUSIC;
+        } else {
+            envDirType = Environment.DIRECTORY_DOCUMENTS;
+        }
+
+        // Source stream (from vault)
+        InputStream src;
+        try {
+            src = MyApplication.vault.getStream(vaultFile);
+        } catch (VaultException e) {
+            throw new RuntimeException(e);
+        }
+        if (src == null) {
+            throw new IOException("Vault stream is null for file: " + vaultFile.id);
+        }
+
+        // ---------- SAF branch ----------
+        if (envDirUri != null) {
+            ContentResolver resolver = context.getContentResolver();
+            boolean isTreeUri =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                            && DocumentsContract.isTreeUri(envDirUri);
+
+            // Case 1: user picked a FOLDER (OPEN_DOCUMENT_TREE) -> tree uri
+            if (isTreeUri) {
+                DocumentFile tree = DocumentFile.fromTreeUri(context, envDirUri);
+                if (tree == null || !tree.canWrite()) {
+                    throw new IOException("TreeUri not writable or null: " + envDirUri);
+                }
+
+                final String mime = vaultFile.mimeType != null
+                        ? vaultFile.mimeType
+                        : "application/octet-stream";
+                String baseName = vaultFile.name != null ? vaultFile.name : "file";
+                String name = baseName;
+
+                // Ensure unique target name
+                DocumentFile existing = tree.findFile(name);
+                int i = 1;
+                while (existing != null && existing.exists()) {
+                    name = appendIndex(baseName, i++);
+                    existing = tree.findFile(name);
+                }
+
+                DocumentFile outDoc = tree.createFile(mime, name);
+                if (outDoc == null) {
+                    throw new IOException("Failed to create target doc: " + name);
+                }
+
+                try (InputStream in = new BufferedInputStream(src, 1 << 20);
+                     OutputStream os = openOutputStreamCompat(resolver, outDoc.getUri(), "w");
+                     BufferedOutputStream out = new BufferedOutputStream(os, 1 << 20)) {
+                    copyLarge(in, out);
+                }
+                return;
+            }
+
+            // Case 2: user picked a SINGLE FILE (CREATE_DOCUMENT) -> document uri
+            try (InputStream in = new BufferedInputStream(src, 1 << 20);
+                 OutputStream os = openOutputStreamCompat(resolver, envDirUri, "w");
+                 BufferedOutputStream out = new BufferedOutputStream(os, 1 << 20)) {
+                copyLarge(in, out);
+            }
+            return;
+        }
+
+        // ---------- App-specific external dir branch (no picker) ----------
+        final File basePath;
+        if (Build.VERSION.SDK_INT >= 29) {
+            basePath = context.getExternalFilesDir(envDirType);
+        } else {
+            // NOTE: requires WRITE_EXTERNAL_STORAGE on <29 if you used public dirs.
+            basePath = Environment.getExternalStoragePublicDirectory(envDirType);
+        }
+        if (basePath == null) throw new IOException("External files dir unavailable for: " + envDirType);
+        if (!basePath.exists() && !basePath.mkdirs()) {
+            throw new IOException("Failed to create directory: " + basePath);
+        }
+
+        if (!basePath.exists() && !basePath.mkdirs()) {
+            throw new IOException("Failed to create directory: " + basePath);
+        }
+
+        File srcFile = MyApplication.keyRxVault
+                .getRxVault()
+                .blockingFirst()
+                .getFile(vaultFile);
+        String targetName = srcFile.getName();
+        File outFile = uniqueFile(basePath, targetName);
+
+        try (InputStream in = new BufferedInputStream(src, 1 << 20);
+             FileOutputStream fos = new FileOutputStream(outFile);
+             BufferedOutputStream out = new BufferedOutputStream(fos, 1 << 20)) {
+            copyLarge(in, out);
+            out.flush();
+            fos.getFD().sync(); // help durability for big files
+        }
+
+        // Notify media database (so it appears in gallery / players)
+        MediaScannerConnection.scanFile(
+                context,
+                new String[]{outFile.getAbsolutePath()},
+                null,
+                null
+        );
+    }
+
+    /** Buffered copy with 1 MiB chunks (much faster for large videos). */
+    private static void copyLarge(InputStream in, OutputStream out) throws IOException {
+        byte[] buf = new byte[1 << 20]; // 1 MiB
+        int n;
+        long copied = 0L;
+        while ((n = in.read(buf)) >= 0) {
+            out.write(buf, 0, n);
+            copied += n;
+            // Optional: flush every ~4 MiB to keep SAF providers happy
+            if ((copied & ((1 << 22) - 1)) == 0) out.flush();
+        }
+    }
+
+    /** Append (1), (2)... before file extension. */
+    private static String appendIndex(String baseName, int idx) {
+        int dot = baseName.lastIndexOf('.');
+        if (dot > 0) {
+            String name = baseName.substring(0, dot);
+            String ext = baseName.substring(dot);
+            return name + " (" + idx + ")" + ext;
+        } else {
+            return baseName + " (" + idx + ")";
+        }
+    }
+
+    /** Create a unique file in a directory mirroring SAF logic. */
+    private static File uniqueFile(File dir, String baseName) {
+        File f = new File(dir, baseName);
+        if (!f.exists()) return f;
+        int i = 1;
+        while (true) {
+            f = new File(dir, appendIndex(baseName, i++));
+            if (!f.exists()) return f;
+        }
+    }
+
+    /** Use mode when possible; fall back to default openOutputStream(uri). */
+    private static OutputStream openOutputStreamCompat(ContentResolver cr, Uri uri, String mode) throws FileNotFoundException {
+        try {
+            // API 26+: openOutputStream(uri, mode) exists
+            return cr.openOutputStream(uri, mode);
+        } catch (Throwable ignored) {
+            return cr.openOutputStream(uri);
+        }
+    }
+    public static Single<VaultFile> saveBitmapAsJpeg(Bitmap bitmap, @Nullable String parent) {
+        String uid = UUID.randomUUID().toString();
+
+        return MyApplication.keyRxVault.getRxVault()
+                .firstOrError()
+                .flatMap(rxVault -> {
+                    RxVaultFileBuilder builder = rxVault
+                            .builder(new ByteArrayInputStream(getJpegBytes(bitmap)))
+                            .setMimeType("image/jpeg")
+                            .setName(uid + ".jpg")
+                            .setType(VaultFile.Type.FILE)
+                            .setThumb(getThumbBytes(bitmap));
+
+                    return (parent == null)
+                            ? builder.build()
+                            : builder.build(parent);
+                })
+                .subscribeOn(Schedulers.io());
+    }
+
+
+    private static byte[] getJpegBytes(Bitmap bitmap) {
+        if (bitmap != null) {
+            ByteArrayOutputStream imageJpegStream = new ByteArrayOutputStream();
+            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 100, imageJpegStream)) {
+                return imageJpegStream.toByteArray();
+            }
+        }
+        return null;
+    }
+
+    private static byte[] getThumbBytes(Bitmap bitmap) {
+        if (bitmap != null) {
+            Bitmap thumb = ThumbnailUtils.extractThumbnail(bitmap, bitmap.getWidth() / 10, bitmap.getHeight() / 10);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            if (thumb.compress(Bitmap.CompressFormat.JPEG, 100, stream)) {
+                return stream.toByteArray();
+            }
+        }
+        return null;
+    }
+
+    public static Single<VaultFile> importPhotoUri(Context context, Uri uri, @Nullable String parentId) {
+        return Single.fromCallable(() -> {
+            boolean keepExif = Preferences.isKeepExif();
+            ByteArrayOutputStream imageJpegStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream thumbJpegStream = new ByteArrayOutputStream();
+
+            DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
+            if (doc == null || !doc.exists()) {
+                throw new FileNotFoundException(context.getString(R.string.error_file_not_found));
+            }
+            try (InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
+                Bitmap bitmap = modifyOrientation(BitmapFactory.decodeStream(inputStream), inputStream);
+                Bitmap thumb = ThumbnailUtils.extractThumbnail(bitmap, bitmap.getWidth() / 10, bitmap.getHeight() / 10);
+                thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbJpegStream);
+
+                if (keepExif) {
+                    try (InputStream inputS = context.getContentResolver().openInputStream(uri)) {
+                        copyStream(inputS, imageJpegStream);
+                    }
+                } else {
+                    if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 100, imageJpegStream)) {
+                        throw new Exception("JPEG compression failed");
+                    }
+                }
+            }
+
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            return rxVault.builder(new ByteArrayInputStream(imageJpegStream.toByteArray()))
+                    .setMimeType("image/jpeg")
+                    .setType(VaultFile.Type.FILE)
+                    .setThumb(thumbJpegStream.toByteArray())
+                    .build(parentId)
+                    .subscribeOn(Schedulers.io())
+                    .blockingGet();
+        });
+    }
+
+    public static Single<VaultFile> saveJpegPhoto(@NonNull byte[] jpegPhoto, @Nullable String parent) throws Exception {
+        return saveJpegPhoto(jpegPhoto, parent, null);
+    }
+
+    /**
+     * @param vaultFileName when non-null and non-blank (e.g. P2P receive), stored under this vault name instead of a random id-based name
+     */
+    public static Single<VaultFile> saveJpegPhoto(
+            @NonNull byte[] jpegPhoto,
+            @Nullable String parent,
+            @Nullable String vaultFileName
+    ) throws Exception {
+        // create thumb
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inSampleSize = 8;
+
+        Bitmap thumb = BitmapFactory.decodeByteArray(jpegPhoto, 0, jpegPhoto.length, opt);
+        if (thumb == null) {
+            throw new IOException("Failed to decode byte array into bitmap");
+        }
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        InputStream input = new ByteArrayInputStream(jpegPhoto);
+
+        // Mark the input stream before modifying orientation
+        input.mark(jpegPhoto.length);
+        thumb = modifyOrientation(thumb, input);
+
+        thumb.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+        // Reset input stream after modifying orientation
+        input.reset();
+
+        String uid = UUID.randomUUID().toString();
+        boolean useSenderName = !TextUtils.isEmpty(vaultFileName);
+        String name = useSenderName ? vaultFileName.trim() : uid + ".jpg";
+        RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+        RxVaultFileBuilder rxVaultFileBuilder = rxVault
+                .builder(input)
+                .setMimeType("image/jpeg")
+                .setName(name)
+                .setAnonymous(!useSenderName)
+                .setType(VaultFile.Type.FILE)
+                .setThumb(getThumbByteArray(thumb));
+        if (!useSenderName) {
+            rxVaultFileBuilder.setId(uid);
+        }
+
+        // Ensure the Bitmap object is recycled to free up memory
+        thumb.recycle();
+
+        if (parent == null) {
+            return rxVaultFileBuilder
+                    .build()
+                    .subscribeOn(Schedulers.io())
+                    .doOnError(Throwable::printStackTrace);
+        } else {
+            return rxVaultFileBuilder
+                    .build(parent)
+                    .subscribeOn(Schedulers.io())
+                    .doOnError(Throwable::printStackTrace);
+        }
+    }
+
+
+    public static VaultFile savePngImage(@NonNull byte[] pngImage) {
+        return savePngImage(pngImage, null, null);
+    }
+
+    /**
+     * @param parent          when non-null, file is created under this folder; when null, behavior matches legacy {@link #savePngImage(byte[])} (vault root)
+     * @param vaultFileName   when non-null and non-blank, stored under this vault name instead of a random id-based name
+     */
+    public static VaultFile savePngImage(
+            @NonNull byte[] pngImage,
+            @Nullable String parent,
+            @Nullable String vaultFileName
+    ) {
+        // create thumb
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inSampleSize = 4;
+
+        final Bitmap thumb = BitmapFactory.decodeByteArray(pngImage, 0, pngImage.length, opt);
+        thumb.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+        // encode png
+        InputStream input = new ByteArrayInputStream(pngImage);
+        String uid = UUID.randomUUID().toString();
+        boolean useSenderName = !TextUtils.isEmpty(vaultFileName);
+        String name = useSenderName ? vaultFileName.trim() : uid + ".png";
+        RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+        RxVaultFileBuilder b = rxVault
+                .builder(input)
+                .setMimeType("image/png")
+                .setName(name)
+                .setAnonymous(!useSenderName)
+                .setType(VaultFile.Type.FILE)
+                .setThumb(getThumbByteArray(thumb));
+        if (!useSenderName) {
+            b.setId(uid);
+        }
+        if (parent == null) {
+            return b.build()
+                    .subscribeOn(Schedulers.io())
+                    .blockingGet();
+        }
+        return b.build(parent)
+                .subscribeOn(Schedulers.io())
+                .blockingGet();
+    }
+
+    public static Single<VaultFile> downloadResourcePdfInputstream(InputStream inputStream, String fileName, @Nullable String parentId) {
+        RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+        return rxVault
+                .builder(inputStream)
+                .setMimeType(C.RESOURCE_PDF)
+                .setAnonymous(true)
+                .setName(fileName)
+                .setType(VaultFile.Type.FILE)
+                .build(parentId)
+                .subscribeOn(Schedulers.io());
+    }
+
+    public static Single<VaultFile> importVideoUri(Context context, Uri uri, String parentID) throws Exception {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        String mimeType = context.getContentResolver().getType(uri);
+
+        DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
+        if (doc == null || !doc.exists()) {
+            throw new FileNotFoundException(context.getString(R.string.error_file_not_found));
+        }
+
+        try {
+            retriever.setDataSource(context, uri);
+
+            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            long duration = Long.parseLong(time);
+            byte[] thumb = getThumbByteArray(retriever.getFrameAtTime());
+
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            return rxVault
+                    .builder(is)
+                    .setMimeType(mimeType)
+                    .setAnonymous(true)
+                    .setThumb(thumb)
+                    .setType(VaultFile.Type.FILE)
+                    .setDuration(duration)
+                    .build(parentID)
+                    .subscribeOn(Schedulers.io());
+        } catch (Exception e) {
+            CrashReporterProvider.INSTANCE.get().recordException(e);
+            Timber.e(e, MediaFileHandler.class.getName());
+            throw e;
+        } finally {
+            try {
+                retriever.release();
+            } catch (Exception ignore) {}
+        }
+    }
+
+
+    public static Single<VaultFile> importOthersUri(Context context, Uri uri, String parentId) throws Exception {
+        String mimeType = context.getContentResolver().getType(uri);
+
+        DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
+        if (doc == null || !doc.exists()) {
+            throw new FileNotFoundException(context.getString(R.string.error_file_not_found));
+        }
+
+        try {
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            assert DocumentFile.fromSingleUri(context, uri) != null;
+            return rxVault
+                    .builder(is)
+                    .setMimeType(mimeType)
+                    .setAnonymous(true)
+                    .setName(doc.getName())
+                    .setType(VaultFile.Type.FILE)
+                    .build(parentId)
+                    .subscribeOn(Schedulers.io());
+        } catch (Exception e) {
+            CrashReporterProvider.INSTANCE.get().recordException(e);
+            Timber.e(e, MediaFileHandler.class.getName());
+            throw e;
+        }
+    }
+
+    @WorkerThread
+    public static VaultFile saveMp4Video(File video, String parent) throws IOException {
+        return saveMp4Video(video, parent, true);
+    }
+
+    /**
+     * @param deleteSourceAfterImport false for P2P receive temps (caller deletes after vault import).
+     */
+    @WorkerThread
+    public static VaultFile saveMp4Video(File video, String parent, boolean deleteSourceAfterImport) throws IOException {
+        return saveMp4Video(video, parent, deleteSourceAfterImport, null);
+    }
+
+    /**
+     * @param vaultFileName when non-null and non-blank (e.g. P2P receive), stored under this vault name instead of a random id-based name
+     */
+    @WorkerThread
+    public static VaultFile saveMp4Video(
+            File video,
+            String parent,
+            boolean deleteSourceAfterImport,
+            @Nullable String vaultFileName
+    ) throws IOException {
+        FileInputStream vis = null;
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+
+        try {
+            vis = new FileInputStream(video);
+            retriever.setDataSource(vis.getFD());
+
+            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            long durationMs = 0L;
+            if (time != null && !time.isEmpty()) {
+                try {
+                    durationMs = Long.parseLong(time);
+                } catch (NumberFormatException e) {
+                    Timber.w("saveMp4Video: invalid duration, using 0");
+                }
+            }
+
+            byte[] thumb = getThumbByteArray(retriever.getFrameAtTime());
+
+            String uid = UUID.randomUUID().toString();
+            boolean useSenderName = !TextUtils.isEmpty(vaultFileName);
+            String name = useSenderName ? vaultFileName.trim() : uid + ".mp4";
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            RxVaultFileBuilder rxVaultFileBuilder = rxVault
+                    .builder(new FileInputStream(video))
+                    .setAnonymous(false)
+                    .setDuration(durationMs)
+                    .setType(VaultFile.Type.FILE)
+                    .setName(name)
+                    .setMimeType("video/mp4")
+                    .setThumb(thumb);
+            if (!useSenderName) {
+                rxVaultFileBuilder.setId(uid);
+            }
+
+            if (parent == null) {
+                return rxVaultFileBuilder
+                        .build()
+                        .blockingGet();
+            } else {
+                return rxVaultFileBuilder
+                        .build(parent)
+                        .blockingGet();
+            }
+        } catch (IOException e) {
+            CrashReporterProvider.INSTANCE.get().recordException(e);
+            Timber.e(e, MediaFileHandler.class.getName());
+
+            throw e;
+        } catch (RuntimeException e) {
+            CrashReporterProvider.INSTANCE.get().recordException(e);
+            Timber.e(e, MediaFileHandler.class.getName());
+            throw new IOException("Video import failed", e);
+        } finally {
+            FileUtil.close(vis);
+            if (deleteSourceAfterImport) {
+                FileUtil.delete(video);
+            }
+            try {
+                retriever.release();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Nullable
+    private static String getMimeType(Uri uri, ContentResolver contentResolver) {
+        String mimeType;
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            mimeType = contentResolver.getType(uri);
+        } else {
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    fileExtension.toLowerCase(Locale.getDefault()));
+        }
+        return mimeType;
+    }
+
+    @Nullable
+    private static byte[] getThumbByteArray(@Nullable Bitmap frame) {
+        if (frame != null) {
+            // todo: make this smarter (maxWith/height or float ratio, keeping aspect)
+            Bitmap thumb = ThumbnailUtils.extractThumbnail(frame, frame.getWidth() / 4, frame.getHeight() / 4);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            if (thumb.compress(Bitmap.CompressFormat.JPEG, 100, stream)) {
+                return stream.toByteArray();
+            }
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    static boolean deleteFile(@NonNull VaultFile vaultFile) {
+        try {
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            return rxVault.delete(vaultFile)
+                    .subscribeOn(Schedulers.io())
+                    .blockingGet();
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public static VaultFile renameFile(@NonNull VaultFile vaultFile, String fileName) {
+        try {
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+            return rxVault.rename(vaultFile.id, fileName)
+                    .subscribeOn(Schedulers.io())
+                    .blockingGet();
+        } catch (Throwable ignored) {
+            return vaultFile;
+        }
+    }
+
+    @Nullable
+    public static InputStream getStream(VaultFile vaultFile) {
+        try {
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+            return rxVault.getStream(vaultFile);
+        } catch (VaultException e) {
+            Timber.d(e, MediaFileHandler.class.getName());
+        }
+
+        return null;
+    }
+
+    public static Uri getEncryptedUri(Context context, VaultFile vaultFile) {
+        File newFile = getFile(vaultFile);
+        return FileProvider.getUriForFile(context, EncryptedFileProvider.AUTHORITY, newFile, vaultFile.name);
+    }
+
+    @Nullable
+    private static Uri getMetadataUri(Context context, VaultFile vaultFile) {
+        try {
+            VaultFile mmf = maybeCreateMetadataMediaFile(vaultFile);
+            return FileProvider.getUriForFile(context, EncryptedFileProvider.AUTHORITY,
+                    getFile(mmf));
+        } catch (Exception e) {
+            Timber.d(e);
+            return null;
+        }
+    }
+
+    /**
+     * Temporary CSV used when sharing or exporting to the device. Not registered as a vault file.
+     * Use {@link #saveVerificationMetadataToVault} to persist a CSV in the encrypted vault.
+     */
+    public static VaultFile maybeCreateMetadataMediaFile(VaultFile vaultFile) {
+        VaultFile mmf = new VaultFile();
+        mmf.name = VerificationMetadataCsv.INSTANCE.fileNameFor(vaultFile.name);
+        mmf.id = mmf.name;
+        mmf.mimeType = VerificationMetadataCsv.MIME_TYPE;
+
+        try {
+            OutputStream os = getMetadataOutputStream(mmf);
+            if (os != null) {
+                os.write(VerificationMetadataCsv.INSTANCE.toCsvBytes(
+                        vaultFile,
+                        vaultFolderPath(vaultFile)
+                ));
+                os.close();
+            }
+        } catch (Exception e) {
+            Timber.d(e);
+        }
+        return mmf;
+    }
+
+    private static String vaultFolderPath(VaultFile vaultFile) {
+        try {
+            return VaultFolderPath.resolveAsync(vaultFile.id).blockingGet();
+        } catch (Exception e) {
+            return VaultFolderPath.ROOT;
+        }
+    }
+
+    /**
+     * Persists verification metadata as a CSV in the vault (same folder when {@code parentId} is set).
+     * Named like the original file so the pair stays identifiable after Nearby Sharing or re-import.
+     * The CSV is linked to the original via {@link VaultFile#sourceFileId}. If that linked CSV
+     * already exists, throws {@link VerificationMetadataAlreadySavedException}. A sibling with the
+     * same name that belongs to another file, or to no file, is left alone and a new name is used.
+     */
+    public static Single<VaultFile> saveVerificationMetadataToVault(
+            @NonNull VaultFile vaultFile,
+            @Nullable String parentId
+    ) {
+        return Single.fromCallable(() -> {
+                    if (vaultFile.metadata == null) {
+                        throw new IllegalArgumentException("Vault file has no verification metadata");
+                    }
+                    String folderId = VerificationMetadataCsv.INSTANCE.parentFolderId(
+                            parentId, vaultFile.parentId);
+                    RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+                    VaultFile existing = findLinkedVerificationCsv(rxVault, vaultFile);
+                    if (existing != null) {
+                        throw alreadySavedException(rxVault, existing);
+                    }
+                    byte[] csv = VerificationMetadataCsv.INSTANCE.toCsvBytes(
+                            vaultFile,
+                            VaultFolderPath.resolve(vaultFile.id, rxVault)
+                    );
+                    VaultFile parent = new VaultFile();
+                    parent.id = folderId;
+                    List<VaultFile> siblings = rxVault.list(parent).blockingGet();
+                    Set<String> usedNames = new HashSet<>();
+                    if (siblings != null) {
+                        for (VaultFile sibling : siblings) {
+                            if (sibling.name != null) {
+                                usedNames.add(sibling.name);
+                            }
+                        }
+                    }
+                    String preferred = VerificationMetadataCsv.INSTANCE.fileNameFor(vaultFile.name);
+                    while (true) {
+                        String name = VerificationMetadataCsv.INSTANCE.availableName(preferred, usedNames);
+                        usedNames.add(name);
+                        RxVaultFileBuilder builder = rxVault
+                                .builder(new ByteArrayInputStream(csv))
+                                .setMimeType(VerificationMetadataCsv.MIME_TYPE)
+                                .setName(name)
+                                .setAnonymous(true)
+                                .setType(VaultFile.Type.FILE)
+                                .setSourceFileId(vaultFile.id);
+                        try {
+                            return builder.build(folderId).blockingGet();
+                        } catch (Exception e) {
+                            if (!isFileNameAlreadyExists(e)) {
+                                throw e;
+                            }
+                        }
+                    }
+                })
+                .subscribeOn(Schedulers.io());
+    }
+
+    /**
+     * Saves the verification CSV in the vault if it is not already there.
+     * Already-saved is ignored so device export can still complete.
+     */
+    public static void saveVerificationMetadataToVaultIfMissing(@NonNull VaultFile vaultFile) {
+        if (vaultFile.metadata == null) {
+            return;
+        }
+        try {
+            saveVerificationMetadataToVault(vaultFile, vaultFile.parentId).blockingGet();
+        } catch (Exception e) {
+            if (VerificationMetadataAlreadySavedExceptionKt.asVerificationMetadataAlreadySaved(e) != null) {
+                return;
+            }
+            Timber.e(e, "Could not save verification CSV to vault during export");
+        }
+    }
+
+    @Nullable
+    private static VaultFile findLinkedVerificationCsv(RxVault rxVault, VaultFile original) {
+        if (original.id == null) {
+            return null;
+        }
+        return rxVault.findBySourceFileId(original.id);
+    }
+
+    private static VerificationMetadataAlreadySavedException alreadySavedException(
+            RxVault rxVault,
+            VaultFile existing
+    ) {
+        String folderId = existing.parentId != null ? existing.parentId : VaultDataSource.ROOT_UID;
+        String csvName = existing.name != null
+                ? existing.name
+                : VerificationMetadataCsv.INSTANCE.fileNameFor(null);
+        return alreadySavedException(rxVault, folderId, csvName);
+    }
+
+    private static VerificationMetadataAlreadySavedException alreadySavedException(
+            RxVault rxVault,
+            String folderId,
+            String csvName
+    ) {
+        return new VerificationMetadataAlreadySavedException(
+                VaultFolderPath.fileLocationInFolder(folderId, csvName, rxVault));
+    }
+
+    private static boolean isFileNameAlreadyExists(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof FileNameAlreadyExistsException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+
+    public static File getTempFile() {
+        if (tmpPath == null) {
+            throw new IllegalStateException("MediaFileHandler not initialized");
+        }
+
+        return new File(tmpPath, UUID.randomUUID().toString());
+    }
+
+    public static long getSize(VaultFile vaultFile) {
+        return getSize(getFile(vaultFile));
+    }
+
+    private static long getSize(File file) {
+        return file.length() - EncryptedFileProvider.IV_SIZE;
+    }
+
+    @Nullable
+    private static OutputStream getMetadataOutputStream(VaultFile file) {
+        try {
+            RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+            return rxVault.getOutStream(file);
+        } catch (VaultException e) {
+            Timber.d(e, MediaFileHandler.class.getName());
+        }
+
+        return null;
+    }
+
+    public static void startShareActivity(Context context, VaultFile vaultFile, boolean includeMetadata) {
+        if (includeMetadata) {
+            startShareActivity(context, Collections.singletonList(vaultFile), true);
+            return;
+        }
+
+        Uri mediaFileUri = getEncryptedUri(context, vaultFile);
+        launchShare(context, Collections.singletonList(mediaFileUri), vaultFile.mimeType, false);
+    }
+
+    public static void startShareActivity(Context context, List<VaultFile> mediaFiles, boolean includeMetadata) {
+        boolean withVerification = includeMetadata && hasVerificationMetadata(mediaFiles);
+        ArrayList<Uri> uris = collectShareUris(context, mediaFiles, withVerification);
+        // TODO 3.5.0: resume the Signal zip share below. Until then Signal receives the same files as the rest of the app.
+        // if (!withVerification || !isSignalShareAvailable(context)) {
+        //     launchShare(context, uris, "*/*", uris.size() > 1, null);
+        //     return;
+        // }
+        //
+        // Context appContext = context.getApplicationContext();
+        // Single.fromCallable(() -> createVerificationShareZip(appContext, mediaFiles))
+        //         .subscribeOn(Schedulers.io())
+        //         .observeOn(AndroidSchedulers.mainThread())
+        //         .subscribe(
+        //                 zipUri -> launchShare(context, uris, "*/*", uris.size() > 1, zipUri),
+        //                 error -> {
+        //                     Timber.e(error, MediaFileHandler.class.getName());
+        //                     launchShare(context, uris, "*/*", uris.size() > 1, null);
+        //                 }
+        //         );
+        launchShare(context, uris, "*/*", uris.size() > 1, null);
+    }
+
+    private static boolean hasVerificationMetadata(List<VaultFile> mediaFiles) {
+        for (VaultFile vaultFile : mediaFiles) {
+            if (vaultFile != null && vaultFile.metadata != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ArrayList<Uri> collectShareUris(
+            Context context,
+            List<VaultFile> mediaFiles,
+            boolean includeMetadata
+    ) {
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (VaultFile vaultFile : mediaFiles) {
+            uris.add(getEncryptedUri(context, vaultFile));
+            if (includeMetadata && vaultFile.metadata != null &&
+                    VerificationMetadataCsv.INSTANCE.csvInSelection(vaultFile, mediaFiles) == null) {
+                Uri metadataUri = getMetadataUri(context, vaultFile);
+                if (metadataUri != null) {
+                    uris.add(metadataUri);
+                }
+            }
+        }
+        return uris;
+    }
+
+    private static Uri createVerificationShareZip(Context context, List<VaultFile> mediaFiles)
+            throws IOException {
+        VerificationShareCacheCleaner.discardActive();
+        File shareDir = new File(context.getCacheDir(), SHARE_CACHE_DIR);
+        deleteShareCache(context);
+        if (!shareDir.exists() && !FileUtil.mkdirs(shareDir)) {
+            throw new IOException("Could not create share cache");
+        }
+
+        String zipName = VerificationMetadataCsv.INSTANCE.zipNameFor(mediaFiles);
+        File zipFile = new File(shareDir, zipName);
+        Set<String> usedNames = new HashSet<>();
+
+        try (ZipOutputStream zip = new ZipOutputStream(
+                new BufferedOutputStream(new FileOutputStream(zipFile)))) {
+            for (VaultFile vaultFile : mediaFiles) {
+                if (vaultFile == null || vaultFile.type == VaultFile.Type.DIRECTORY) {
+                    continue;
+                }
+                addVaultFileToZip(zip, vaultFile, usedNames);
+                if (vaultFile.metadata != null &&
+                        VerificationMetadataCsv.INSTANCE.csvInSelection(vaultFile, mediaFiles) == null) {
+                    addCsvToZip(zip, vaultFile, usedNames);
+                }
+            }
+        }
+
+        return FileProvider.getUriForFile(context, ShareFileProvider.AUTHORITY, zipFile, zipName);
+    }
+
+    private static void addVaultFileToZip(
+            ZipOutputStream zip,
+            VaultFile vaultFile,
+            Set<String> usedNames
+    ) throws IOException {
+        InputStream source = getStream(vaultFile);
+        if (source == null) {
+            throw new IOException("Vault stream is null for file: " + vaultFile.id);
+        }
+        ZipEntry entry = new ZipEntry(uniqueZipEntryName(vaultFile.name, usedNames));
+        zip.putNextEntry(entry);
+        try {
+            copyStream(source, zip);
+        } finally {
+            source.close();
+            zip.closeEntry();
+        }
+    }
+
+    private static void addCsvToZip(
+            ZipOutputStream zip,
+            VaultFile vaultFile,
+            Set<String> usedNames
+    ) throws IOException {
+        byte[] csv = VerificationMetadataCsv.INSTANCE.toCsvBytes(
+                vaultFile,
+                vaultFolderPath(vaultFile)
+        );
+        ZipEntry entry = new ZipEntry(
+                uniqueZipEntryName(VerificationMetadataCsv.INSTANCE.fileNameFor(vaultFile.name), usedNames)
+        );
+        zip.putNextEntry(entry);
+        zip.write(csv);
+        zip.closeEntry();
+    }
+
+    private static String uniqueZipEntryName(String preferred, Set<String> usedNames) {
+        String name = new File(preferred != null ? preferred : "file").getName();
+        if (TextUtils.isEmpty(name)) {
+            name = "file";
+        }
+        if (usedNames.add(name)) {
+            return name;
+        }
+        String base = FileUtil.getBaseName(name);
+        String extension = name.substring(base.length());
+        int index = 1;
+        String candidate;
+        do {
+            candidate = base + "-" + index++ + extension;
+        } while (!usedNames.add(candidate));
+        return candidate;
+    }
+
+    private static void launchShare(
+            Context context,
+            List<Uri> uris,
+            String mimeType,
+            boolean multiple
+    ) {
+        launchShare(context, uris, mimeType, multiple, null);
+    }
+
+    private static void launchShare(
+            Context context,
+            List<Uri> uris,
+            String mimeType,
+            boolean multiple,
+            @Nullable Uri signalZipUri
+    ) {
+        if (uris.isEmpty()) {
+            return;
+        }
+        Intent shareIntent = new Intent();
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.setType(mimeType);
+        if (multiple || uris.size() > 1) {
+            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, new ArrayList<>(uris));
+        } else {
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+        }
+        ClipData clipData = ClipData.newRawUri(null, uris.get(0));
+        for (int i = 1; i < uris.size(); i++) {
+            clipData.addItem(new ClipData.Item(uris.get(i)));
+        }
+        shareIntent.setClipData(clipData);
+
+        Intent chooser = Intent.createChooser(shareIntent, context.getText(R.string.action_share));
+        chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (signalZipUri != null) {
+            attachSignalZipShare(context, chooser, shareIntent, signalZipUri);
+        }
+        if (!(context instanceof Activity)) {
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        VerificationShareCacheCleaner cleaner = null;
+        if (signalZipUri != null && context instanceof Activity) {
+            cleaner = VerificationShareCacheCleaner.arm((Activity) context, signalZipUri);
+        }
+        try {
+            context.startActivity(chooser);
+        } catch (Exception e) {
+            Timber.e(e, MediaFileHandler.class.getName());
+            if (cleaner != null) {
+                cleaner.clearNow();
+            } else if (signalZipUri != null) {
+                deleteShareCache(context);
+            }
+        }
+    }
+
+    static void deleteShareCache(Context context) {
+        File shareDir = new File(context.getApplicationContext().getCacheDir(), SHARE_CACHE_DIR);
+        File[] existing = shareDir.listFiles();
+        if (existing == null) {
+            return;
+        }
+        for (File file : existing) {
+            if (!file.delete()) {
+                Timber.w("Failed to delete share cache file %s", file.getAbsolutePath());
+            }
+        }
+    }
+
+    private static boolean isSignalShareAvailable(Context context) {
+        Intent probe = new Intent(Intent.ACTION_SEND);
+        probe.setType(VerificationMetadataCsv.MIME_TYPE_ZIP);
+        probe.setPackage(SIGNAL_PACKAGE);
+        return !queryShareActivities(context, probe).isEmpty();
+    }
+
+    private static void attachSignalZipShare(
+            Context context,
+            Intent chooser,
+            Intent defaultShare,
+            Uri zipUri
+    ) {
+        Intent signalIntent = new Intent(Intent.ACTION_SEND);
+        signalIntent.setType(VerificationMetadataCsv.MIME_TYPE_ZIP);
+        signalIntent.putExtra(Intent.EXTRA_STREAM, zipUri);
+        signalIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        signalIntent.setClipData(ClipData.newRawUri(null, zipUri));
+        signalIntent.setPackage(SIGNAL_PACKAGE);
+
+        List<ResolveInfo> signalActivities = queryShareActivities(context, signalIntent);
+        if (signalActivities.isEmpty()) {
+            return;
+        }
+
+        ResolveInfo target = signalActivities.get(0);
+        signalIntent.setPackage(null);
+        signalIntent.setComponent(new ComponentName(
+                target.activityInfo.packageName,
+                target.activityInfo.name
+        ));
+        context.grantUriPermission(
+                SIGNAL_PACKAGE,
+                zipUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+        );
+        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{signalIntent});
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ArrayList<ComponentName> exclude = new ArrayList<>();
+            for (ResolveInfo info : queryShareActivities(context, defaultShare)) {
+                if (SIGNAL_PACKAGE.equals(info.activityInfo.packageName)) {
+                    exclude.add(new ComponentName(
+                            info.activityInfo.packageName,
+                            info.activityInfo.name
+                    ));
+                }
+            }
+            if (!exclude.isEmpty()) {
+                chooser.putExtra(
+                        Intent.EXTRA_EXCLUDE_COMPONENTS,
+                        exclude.toArray(new ComponentName[0])
+                );
+            }
+        }
+    }
+
+    private static List<ResolveInfo> queryShareActivities(Context context, Intent intent) {
+        PackageManager packageManager = context.getPackageManager();
+        int flags = PackageManager.MATCH_DEFAULT_ONLY;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = PackageManager.MATCH_ALL;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return packageManager.queryIntentActivities(
+                    intent,
+                    PackageManager.ResolveInfoFlags.of(flags)
+            );
+        }
+        return packageManager.queryIntentActivities(intent, flags);
+    }
+
+    private static File getFile(VaultFile vaultFile) {
+        RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+        return rxVault.getFile(vaultFile);
+    }
+
+    private static Bitmap modifyOrientation(Bitmap bitmap, InputStream inputStream) throws IOException {
+        ExifInterface ei = new ExifInterface(inputStream);
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        return switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90 -> rotate(bitmap, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180 -> rotate(bitmap, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270 -> rotate(bitmap, 270);
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> flip(bitmap, true, false);
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL -> flip(bitmap, false, true);
+            default -> bitmap;
+        };
+    }
+
+    private static Bitmap rotate(Bitmap bitmap, float degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private static Bitmap flip(Bitmap bitmap, boolean horizontal, boolean vertical) {
+        Matrix matrix = new Matrix();
+        matrix.preScale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    public static Observable<List<VaultFile>> getLastVaultFileFromDb() {
+        Limits limits = new Limits();
+        limits.limit = 1;
+        Sort sort = new Sort();
+        sort.type = Sort.Type.DATE;
+        sort.direction = Sort.Direction.DESC;
+        RxVault rxVault = MyApplication.keyRxVault.getRxVault().blockingFirst();
+
+        return rxVault.list(null, FilterType.PHOTO_VIDEO, sort, limits)
+                .toObservable();
+    }
+
+    public static void startImportFiles(Activity context, Boolean multipleFile, String type) {
+        startImportFiles(context, multipleFile, type, false);
+    }
+
+    public static void startImportFiles(Activity context, Boolean multipleFile, String type, boolean deleteOriginal) {
+        launchFilePicker(
+                context,
+                type != null ? type : "*/*",
+                null,
+                Boolean.TRUE.equals(multipleFile),
+                C.IMPORT_MULTIPLE_FILES,
+                deleteOriginal
+        );
+    }
+
+    public static List<VaultFile> walkAllFiles(List<VaultFile> vaultFiles) {
+        List<VaultFile> resultList = new ArrayList<>();
+        for (VaultFile vaultFile : vaultFiles) {
+            if (vaultFile.type == VaultFile.Type.DIRECTORY) {
+                resultList.addAll(getAllFiles(vaultFile));
+            } else {
+                resultList.add(vaultFile);
+            }
+        }
+        return resultList;
+    }
+
+    public static List<VaultFile> walkAllFilesWithDirectories(List<VaultFile> vaultFiles) {
+        List<VaultFile> resultList = new ArrayList<>(vaultFiles);
+        FileWalker fileWalker = new FileWalker();
+        for (VaultFile vaultFile : vaultFiles) {
+            if (vaultFile.type == VaultFile.Type.DIRECTORY) {
+                resultList.addAll(fileWalker.walkWithDirectories(vaultFile));
+            }
+        }
+        return resultList;
+    }
+
+    public static Single<VaultFile> importVaultFileUri(Context context, @Nullable Uri uri, String parentId) throws Exception {
+        Single<VaultFile> vaultFile = null;
+        if (uri != null) {
+            String mimeType = getMimeTypeFromContentResolver(uri, context.getContentResolver());
+            if (mimeType != null) {
+                vaultFile = importUriByMimeType(context, uri, parentId, mimeType);
+            }
+        }
+        return vaultFile;
+    }
+
+    private static Single<VaultFile> importUriByMimeType(Context context, Uri uri, String parentId, String mimeType) throws Exception {
+        if (MediaFile.INSTANCE.isImageFileType(mimeType)) {
+            return importPhotoUri(context, uri, parentId);
+        } else if (MediaFile.INSTANCE.isVideoFileType(mimeType)) {
+            return importVideoUri(context, uri, parentId);
+        } else {
+            return importOthersUri(context, uri, parentId);
+        }
+    }
+
+    private static String getMimeTypeFromContentResolver(Uri uri, ContentResolver contentResolver) {
+        return contentResolver.getType(uri);
+    }
+
+    public static List<Single<VaultFile>> importVaultFilesUris(Context context, @Nullable List<Uri> uris, String parentId) throws Exception {
+        List<Single<VaultFile>> vaultFiles = new ArrayList<>();
+        assert uris != null;
+        for (Uri uri : uris) {
+            String mimeType = getMimeType(uri, context.getContentResolver());
+            if (mimeType != null) {
+                if (MediaFile.INSTANCE.isImageFileType(mimeType)) {
+                    vaultFiles.add(importPhotoUri(context, uri, parentId));
+                } else if (MediaFile.INSTANCE.isVideoFileType(mimeType)) {
+                    vaultFiles.add(importVideoUri(context, uri, parentId));
+                } else {
+                    vaultFiles.add(importOthersUri(context, uri, parentId));
+                }
+            }
+        }
+        return vaultFiles;
+    }
+
+
+    private static List<VaultFile> getAllFiles(VaultFile vaultFile) {
+        FileWalker fileWalker = new FileWalker();
+        return fileWalker.walk(vaultFile);
+    }
+
+    private static void copyStream(InputStream source, OutputStream destination) throws IOException {
+        byte[] buf = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = source.read(buf)) != -1) {
+            destination.write(buf, 0, bytesRead);
+        }
+    }
+
+    public static VaultFile getUriInfo(Context context, Uri uri) {
+        VaultFile file = new VaultFile();
+        if (CONTENT_SCHEME.equals(uri.getScheme())) {
+            ContentResolver contentResolver = context.getContentResolver();
+            try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    int mimeTypeIndex = cursor.getColumnIndex(MIME_TYPE_COLUMN); // Custom column name
+                    if (nameIndex != -1) {
+                        file.name = cursor.getString(nameIndex);
+                    }
+                    if (mimeTypeIndex != -1) {
+                        file.mimeType = cursor.getString(mimeTypeIndex);
+                    }
+                }
+            }
+        } else if ("file".equals(uri.getScheme())) {
+            file.name = uri.getLastPathSegment();
+            file.mimeType = null;
+        }
+        return file;
+    }
+}

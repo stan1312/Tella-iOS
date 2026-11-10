@@ -1,9 +1,10 @@
 /**
  * SPECTRE Capture — web entry points and owner-only admin functions.
  *
- * Web app: doPost only handles enroll / initUpload / finalizeUpload.
+ * Web app: doPost only handles enroll / initUpload / finalizeUpload / status.
+ * doGet (40_Web.js) serves the invitation page and the owner's control page.
  * Admin functions below are run by the OWNER from the Apps Script editor
- * (Run menu). They are never routed from doPost/doGet.
+ * (Run menu) or from the control page; each one refuses anyone else.
  */
 
 function doPost(e) {
@@ -12,13 +13,9 @@ function doPost(e) {
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
 }
 
-function doGet() {
-  return ContentService.createTextOutput(JSON.stringify({ ok: false, error: { code: 'NOT_FOUND', message: 'not found' } }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
 /** 1) Run once. Creates the private deposit folder with the narrow drive.file scope. */
 function spectreSetup() {
+  spRequireOwner_();
   var env = spGasEnv_();
   if (!env.store.get('CFG_FOLDER_ID')) {
     var id = spCreateDriveFolder_(env, 'SPECTRE_DEPOT_TEST', null);
@@ -32,6 +29,7 @@ function spectreSetup() {
 
 /** 2) After deploying the web app, store its /exec URL (Deploy > Manage deployments). */
 function spectreSetWebAppUrl(url) {
+  spRequireOwner_();
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(String(url))) {
     throw new Error('Expected https://script.google.com/macros/s/<id>/exec');
   }
@@ -40,6 +38,7 @@ function spectreSetWebAppUrl(url) {
 
 /** 3) One individual invitation per team member. Edit the label, then Run. */
 function spectreCreateInvite() {
+  spRequireOwner_();
   var label = 'membre-01'; // pseudonymous label, never a real name
   var env = spGasEnv_();
   var url = env.store.get('CFG_WEBAPP_URL') || ScriptApp.getService().getUrl();
@@ -49,6 +48,7 @@ function spectreCreateInvite() {
 }
 
 function spectreListDevices() {
+  spRequireOwner_();
   var list = spAdminListDevices_(spGasEnv_());
   console.log(JSON.stringify(list, null, 2));
   return list;
@@ -56,6 +56,7 @@ function spectreListDevices() {
 
 /** Revoke one device: put its id (d_…) below, then Run. Other devices are unaffected. */
 function spectreRevokeDevice(deviceId) {
+  spRequireOwner_();
   deviceId = deviceId || 'd_0000000000000000';
   var ok = spAdminRevokeDevice_(spGasEnv_(), deviceId);
   console.log(ok ? 'Revoked ' + deviceId : 'Unknown device ' + deviceId);
@@ -64,6 +65,7 @@ function spectreRevokeDevice(deviceId) {
 
 /** Emergency: revoke every enrolled device. */
 function spectreRevokeAllDevices() {
+  spRequireOwner_();
   var env = spGasEnv_();
   spAdminListDevices_(env).forEach(function (d) { spAdminRevokeDevice_(env, d.id); });
 }

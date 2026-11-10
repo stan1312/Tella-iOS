@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/verification.collecting_dialog.expl"
+        android:textColor="@color/wa_darker_gray" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            style="@style/MetadataGatheringDialogImage"
+            android:contentDescription="@string/verification.collecting_list.item_device"
+            android:src="@drawable/ic_check_circle_green" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="@string/verification.collecting_list.item_device"
+            android:textColor="@color/wa_darker_gray" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ProgressBar
+            android:id="@+id/locationProgress"
+            style="@style/MetadataGatheringDialogImage"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/locationCheck"
+            style="@style/MetadataGatheringDialogImage"
+            android:contentDescription="@string/verification.collecting_list.item_location"
+            android:src="@drawable/ic_check_circle_green"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="@string/verification.collecting_list.item_location"
+            android:textColor="@color/wa_darker_gray" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ProgressBar
+            android:id="@+id/networkProgress"
+            style="@style/MetadataGatheringDialogImage"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/networkCheck"
+            style="@style/MetadataGatheringDialogImage"
+            android:contentDescription="@string/verification.collecting_list.item_network"
+            android:src="@drawable/ic_check_circle_green"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="@string/verification.collecting_list.item_network"
+            android:textColor="@color/wa_darker_gray" />
+    </LinearLayout>
+</LinearLayout>

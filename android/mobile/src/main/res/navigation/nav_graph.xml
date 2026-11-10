@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@+id/home">
+
+    <include app:graph="@navigation/home"/>
+
+    <include app:graph="@navigation/camera"/>
+
+    <include app:graph="@navigation/micro"/>
+
+</navigation>

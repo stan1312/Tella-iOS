@@ -1,0 +1,156 @@
+# SPECTRE Capture Android CI.
+#  core: spectre-core unit + end-to-end scenarios (real Apps Script code on the Node mock stack), backend tests.
+#  apk:  builds the "spectre" flavor. Signed release APK when the owner has stored the signing key in the
+#        repository secrets (SPECTRE_KEYSTORE_B64, SPECTRE_KEYSTORE_PASSWORD); otherwise a debug-signed test APK.
+#        No Google identifier, /exec URL or invitation is ever compiled into the APK.
+name: spectre-android
+on:
+  push:
+    paths: ['android/**', 'backend/**', 'scripts/android_*', '.github/workflows/spectre-android.yml']
+  pull_request:
+    paths: ['android/**', 'backend/**', 'scripts/android_*', '.github/workflows/spectre-android.yml']
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: spectre-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: ffmpeg (synthetic fixtures + audio checks)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Backend tests (Apps Script on simulated Drive)
+        run: cd backend && npm test
+      - name: Synthetic fixtures
+        run: ./scripts/android_make_fixtures.sh
+      - name: spectre-core tests (unit + T01–T15)
+        run: cd android && chmod +x gradlew && ./gradlew --no-daemon -p spectre-core test
+      - name: Test summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          t=f=s=0
+          for x in glob.glob('android/spectre-core/build/test-results/test/*.xml'):
+              r=ET.parse(x).getroot(); t+=int(r.get('tests')); f+=int(r.get('failures'))+int(r.get('errors')); s+=int(r.get('skipped'))
+          print(f"### spectre-core: {t} tests, {f} failed, {s} skipped")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: spectre-core-test-results, path: android/spectre-core/build/test-results/test/ }
+
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      SPECTRE_VERSION_CODE: ${{ github.run_number }}
+      SPECTRE_APPLICATION_ID: ${{ vars.SPECTRE_APPLICATION_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v4
+      - name: Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;28.0.12916984" >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Signing key (owner secret, optional)
+        env:
+          KEYSTORE_B64: ${{ secrets.SPECTRE_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/spectre.p12"
+            echo "SPECTRE_KEYSTORE=$RUNNER_TEMP/spectre.p12" >> "$GITHUB_ENV"
+            echo "VARIANT=Release" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No SPECTRE_KEYSTORE_B64 secret: building a debug-signed TEST APK (see docs/ANDROID_APK.md)."
+            echo "VARIANT=Debug" >> "$GITHUB_ENV"
+          fi
+      - name: Check signing key opens (clear error before the long build)
+        if: env.VARIANT == 'Release'
+        env:
+          SPECTRE_KEYSTORE_PASSWORD: ${{ secrets.SPECTRE_KEYSTORE_PASSWORD }}
+          SPECTRE_KEY_ALIAS: ${{ secrets.SPECTRE_KEY_ALIAS }}
+        run: |
+          PW="$(printf '%s' "$SPECTRE_KEYSTORE_PASSWORD" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          ALIAS="$(printf '%s' "${SPECTRE_KEY_ALIAS:-spectre}" | tr -d '\r\n ')"
+          keytool -list -keystore "$SPECTRE_KEYSTORE" -storetype pkcs12 -storepass "$PW" -alias "${ALIAS:-spectre}" >/dev/null \
+            || { echo "::error::The signing key does not open with SPECTRE_KEYSTORE_PASSWORD / SPECTRE_KEY_ALIAS (see docs/ANDROID_APK.md §2)."; exit 1; }
+          echo "Signing key OK"
+      - name: Build APK (flavor spectre)
+        env:
+          SPECTRE_KEYSTORE_PASSWORD: ${{ secrets.SPECTRE_KEYSTORE_PASSWORD }}
+          SPECTRE_KEY_ALIAS: ${{ secrets.SPECTRE_KEY_ALIAS }}
+        run: |
+          cd android && chmod +x gradlew
+          ./gradlew --no-daemon -Pfdroid -Pkotlin.compiler.execution.strategy=in-process \
+            "-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8" \
+            ":mobile:assembleSpectre${VARIANT}"
+      - name: Verify APK (signature, no secrets inside)
+        run: |
+          APK=$(ls android/mobile/build/outputs/apk/spectre/*/*.apk | head -1)
+          echo "APK=$APK"
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          "$BT/apksigner" verify --print-certs "$APK" | tee signing.txt
+          "$BT/aapt2" dump badging "$APK" | grep -E "^package:|application-label:|sdkVersion|targetSdkVersion" | tee badging.txt
+          if unzip -p "$APK" | grep -a -E -q "script\.google\.com/macros/s/[A-Za-z0-9_-]{20,}"; then echo "::error::an Apps Script /exec URL is embedded"; exit 1; fi
+          if unzip -l "$APK" | grep -E -q "\.(p12|jks|keystore)$"; then echo "::error::a keystore is embedded"; exit 1; fi
+          NAME="spectre-capture-android-${VARIANT,,}-${{ github.run_number }}.apk"
+          mkdir -p out && cp "$APK" "out/$NAME" && (cd out && sha256sum "$NAME" | tee "$NAME.sha256")
+          {
+            echo "### APK ${VARIANT}: \`$NAME\`"
+            echo '```'; cat badging.txt; grep -E "Signer #1 certificate (DN|SHA-256)" signing.txt; cat out/*.sha256; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spectre-capture-android-${{ github.run_number }}
+          path: out/
+          retention-days: 30
+
+  # Smoke test on an Android emulator: install, launch, no crash, screenshot of the first screen.
+  # (Camera, real Google Drive and background behaviour are checked on a real phone: docs/TEST_ANDROID.md.)
+  emulator:
+    needs: apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: 'spectre-capture-android-${{ github.run_number }}', path: apk }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            adb install -r "$(ls apk/*.apk | head -1)"
+            adb logcat -c
+            adb shell monkey -p org.spectre.capture -c android.intent.category.LAUNCHER 1
+            sleep 25
+            adb exec-out screencap -p > first-screen.png
+            adb logcat -d > logcat.txt
+            adb shell pidof org.spectre.capture && echo "APP_RUNNING"
+            ! grep -E "FATAL EXCEPTION|ANR in org.spectre" logcat.txt
+            adb shell pidof org.spectre.capture
+            adb shell "am start -W -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d 'spectre://enroll?v=1&endpoint=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FFAKE%2Fexec&code=0123abcd-4567ef01-89abcdef-01234567'"
+            sleep 8
+            adb exec-out screencap -p > invitation-link.png
+            adb logcat -d > logcat.txt
+            ! grep -E "FATAL EXCEPTION|ANR in org.spectre" logcat.txt
+            adb shell pidof org.spectre.capture
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'emulator-smoke-${{ github.run_number }}', path: "first-screen.png\ninvitation-link.png\nlogcat.txt" }

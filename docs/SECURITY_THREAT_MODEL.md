@@ -72,6 +72,14 @@ Frontières : (A) téléphone ↔ Apps Script (HTTPS, requêtes signées HMAC) ;
 ### S14 — Droit à l'effacement / gouvernance
 - La suppression des archives se fait par le propriétaire dans Drive (le système n'offre volontairement aucune suppression distante). Prévoir une procédure écrite (qui demande, qui supprime, corbeille Drive vidée).
 
+## 2 bis. Spécificités Android (APK `spectre`)
+- **A-S1 (équivalent S1)** : secret d'appareil et clé de l'outbox scellés par une clé AES-GCM du Keystore Android (non exportable, liée au matériel quand le téléphone le permet), fichiers dans `noBackupFilesDir` (stockage chiffré par identifiant, accessible **après le premier déverrouillage**). Même compromis que l'iPhone : l'envoi continue écran verrouillé ; un attaquant capable d'extraire la mémoire d'un téléphone allumé déjà déverrouillé une fois peut lire les copies en attente. Pas d'exigence d'authentification par clé (`setUserAuthenticationRequired`) pour cette raison.
+- **A-S2** : la caméra Tella écrit la vidéo en clair dans un fichier temporaire avant de la chiffrer dans le coffre (hérité de Tella, comme S2). Le dictaphone écrit directement dans le coffre chiffré. La copie d'envoi est produite **depuis le coffre déchiffré en flux**, sans fichier temporaire en clair (ré-encapsulation `.m4a` en deux passes, empreinte vérifiée).
+- **A-S9 (invitation)** : le lien `spectre://enroll` peut être ouvert par n'importe quelle app ou page web ; l'app exige le **déverrouillage Tella** et une **confirmation explicite** affichant l'hôte du service avant d'enregistrer quoi que ce soit (et avertit si une configuration existante serait remplacée). Seuls `https://script.google.com/...` et `*.run.app` sont acceptés.
+- **A-S11 (sauvegarde)** : `allowBackup=false` (Tella) et données SPECTRE dans `noBackupFilesDir` : ni sauvegarde Google, ni transfert d'appareil.
+- **A-S15 (distribution hors Play Store)** : l'APK est installé depuis une source « inconnue ». Risque : un faux APK présenté comme SPECTRE. Mitigation : APK remis en personne (QR), empreinte SHA-256 du fichier et du certificat publiées dans le résumé CI ; Android refuse toute mise à jour signée par une autre clé. La clé de signature reste au propriétaire (secret GitHub chiffré + copie hors ligne). Désactiver l'autorisation « sources inconnues » après installation.
+- **A-S16 (arrière-plan)** : WorkManager (service de premier plan `dataSync`, notification neutre `VISIBILITY_SECRET`). Certains fabricants suspendent les tâches en arrière-plan : l'envoi reprend au déverrouillage suivant de l'app ; réglage batterie « sans restriction » conseillé (`docs/ANDROID_APK.md` §4).
+
 ## 3. Risques résiduels principaux (synthèse)
 1. Téléphone allumé saisi après premier déverrouillage : copies en attente lisibles par un attaquant avancé (compromis `AfterFirstUnlock`).
 2. Fichier `tmp/` en clair hérité de Tella ; effacement flash non garanti.
@@ -81,6 +89,7 @@ Frontières : (A) téléphone ↔ Apps Script (HTTPS, requêtes signées HMAC) ;
 6. Pas d'épinglage TLS.
 7. Comportements Google réels (session, latence de `sha256Checksum`, quotas Apps Script) **non vérifiés** dans cet environnement.
 8. Build iOS et comportement en arrière-plan **non vérifiés** (pas de Mac ici).
+9. Android : comportement réel sur téléphone (caméra, arrière-plan selon fabricant, Keystore) **non vérifié** ici (pas d'appareil ni d'émulateur) ; APK distribué hors Play Store.
 
 ## 4. Validation requise
 - Relecture sécurité recommandée (ce document + `docs/01_ARCHITECTURE.md` + code `SpectreCore/` et `backend/apps-script/src/`).

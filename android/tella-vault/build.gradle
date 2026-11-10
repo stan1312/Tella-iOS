@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk versions.compileSdk
+
+    defaultConfig {
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            universalApk true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    namespace 'com.hzontal.tella_vault'
+}
+
+dependencies {
+    implementation platform("org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin"
+
+    implementation "androidx.core:core-ktx:$versions.ktx"
+    implementation "androidx.appcompat:appcompat:$versions.appcompat"
+    implementation "com.google.android.material:material:$versions.material"
+
+    api "io.reactivex.rxjava2:rxjava:$versions.rxjava"
+    implementation "org.apache.directory.studio:org.apache.commons.io:$versions.apacheCommonsIo"
+
+    //TODO AHLEM CHECK HOW WE ARE GOING TO REMOVE THOSE DEPENDENCIES
+    // SQLite / SQLCipher
+    api "net.zetetic:sqlcipher-android:$versions.sqlcipher"
+    api "androidx.sqlite:sqlite-ktx:$versions.sqlite"
+
+    // Retrofit (Gson converter exposed to consumers)
+    api "com.squareup.retrofit2:converter-gson:$versions.retrofit"
+
+    implementation project(path: ':tella-keys')
+
+    testImplementation "junit:junit:$versions.junit"
+    // Android 12+ test manifests require the exported components in AndroidX Test 1.5+.
+    androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+}
