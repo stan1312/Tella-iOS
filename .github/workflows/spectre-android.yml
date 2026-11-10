@@ -11,7 +11,9 @@ on:
     paths: ['android/**', 'backend/**', 'scripts/android_*', '.github/workflows/spectre-android.yml']
   workflow_dispatch:
 permissions: { contents: read }
-concurrency: { group: spectre-android-${{ github.ref }}, cancel-in-progress: true }
+concurrency:
+  group: spectre-android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   core:
