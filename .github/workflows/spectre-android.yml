@@ -103,3 +103,37 @@ jobs:
           name: spectre-capture-android-${{ github.run_number }}
           path: out/
           retention-days: 30
+
+  # Smoke test on an Android emulator: install, launch, no crash, screenshot of the first screen.
+  # (Camera, real Google Drive and background behaviour are checked on a real phone: docs/TEST_ANDROID.md.)
+  emulator:
+    needs: apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: 'spectre-capture-android-${{ github.run_number }}', path: apk }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            adb install -r "$(ls apk/*.apk | head -1)"
+            adb logcat -c
+            adb shell monkey -p org.spectre.capture -c android.intent.category.LAUNCHER 1
+            sleep 25
+            adb exec-out screencap -p > first-screen.png
+            adb logcat -d > logcat.txt
+            adb shell pidof org.spectre.capture && echo "APP_RUNNING"
+            ! grep -E "FATAL EXCEPTION|ANR in org.spectre" logcat.txt
+            adb shell pidof org.spectre.capture
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'emulator-smoke-${{ github.run_number }}', path: "first-screen.png\nlogcat.txt" }
