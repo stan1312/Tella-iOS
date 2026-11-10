@@ -164,6 +164,8 @@ object SpectreDeposit {
     fun onVaultUnlocked() {
         if (!enabled) return
         val e = engine ?: return
+        // Also refresh the demonstration name shown on the home card (signed `status` action).
+        refreshDepositStatus()
         io.execute {
             val vault = rxVaultOrNull() ?: return@execute
             for (r in e.allRecords().filter { it.stage == CaptureStage.awaitingPreparation }) {
